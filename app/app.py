@@ -93,7 +93,44 @@ def login():
 
     return jsonify({'message': 'Login successful'})
 
+# Organizations
+@app.route('/organizations', methods=['GET'])
+def get_organizations():
+    organizations = Organization.query.all()
 
+    organization_data = [
+        {
+            "id": organization.id,
+            "image_url": organization.image_url,
+            "name": organization.name,
+            "description": organization.description,
+            "contact_information": organization.contact_information,
+            "status": organization.status,
+            "isAdminApproved": organization.isAdminApproved
+        }
+        for organization in organizations
+    ]
+
+    return jsonify(organization_data)
+
+@app.route('/organizations/<int:organization_id>', methods=['GET'])
+def get_organization(organization_id):
+    organization = Organization.query.get(organization_id)
+
+    if organization is None:
+        return jsonify({"error": "Organization not found"}), 404
+
+    organization_data = {
+        "id": organization.id,
+        "image_url": organization.image_url,
+        "name": organization.name,
+        "description": organization.description,
+        "contact_information": organization.contact_information,
+        "status": organization.status,
+        "isAdminApproved": organization.isAdminApproved
+    }
+
+    return jsonify(organization_data)
 
 
 if __name__ == '__main__':
