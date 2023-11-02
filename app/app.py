@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, abort
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_migrate import Migrate
 from models import db, User, Role, Story, Donation, Beneficiary, Organization, Inventory, Reminder
@@ -9,7 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import secrets
 from flask_swagger_ui import get_swaggerui_blueprint
-
+from datetime import datetime
 def create_app():
 
     app = Flask(__name__)
@@ -131,6 +131,82 @@ def get_organization(organization_id):
     }
 
     return jsonify(organization_data)
+
+        #donations
+
+@app.route('/donations', methods=['GET']) #admin only
+def get_donations():
+    organization_id = request.args.get('organization_id')
+    if organization_id:
+        donations = Donation.query.filter_by(organization_id=organization_id).all()
+    else:
+        donations = Donation.query.all()
+    donations_list = [{
+        'id': donation.id,
+        'donor_user_id': donation.donor_user_id,
+        'organization_id': donation.organization_id,
+        'amount': str(donation.amount),
+        'donation_type': donation.donation_type,
+        'anonymous': donation.anonymous,
+        'date': donation.date.isoformat(),
+        'transaction_id': donation.transaction_id
+    } for donation in donations]
+    return jsonify(donations_list), 200
+
+
+@app.route('/donations/<int:donation_id>', methods=['GET'])
+def get_donation(donation_id):
+    donation = Donation.query.get_or_404(donation_id, description="Donation not found")
+    donation_dict = {
+        'id': donation.id,
+        'donor_user_id': donation.donor_user_id,
+        'organization_id': donation.organization_id,
+        'amount': str(donation.amount),
+        'donation_type': donation.donation_type,
+        'anonymous': donation.anonymous,
+        'date': donation.date.isoformat(),
+        'transaction_id': donation.transaction_id
+    }
+    return jsonify(donation_dict), 200
+
+
+from flask import Flask, request, jsonify, abort
+
+@app.route('/donations/<int:donation_id>', methods=['PUT'])
+def update_donation(donation_id):
+    if not request.is_json:
+        return jsonify({"msg": "Missing JSON in request"}), 400
+
+    donation = Donation.query.get(donation_id)
+    if not donation:
+        abort(404, description="Donation not found")
+    
+    data = request.get_json()
+    
+    donation.amount = data.get('amount', donation.amount)
+    donation.donation_type = data.get('donation_type', donation.donation_type)
+    donation.anonymous = data.get('anonymous', donation.anonymous)
+
+    if 'date' in data:
+        try:
+            donation.date = datetime.strptime(data['date'], '%Y-%m-%d').date()
+        except ValueError:
+            abort(400, description="Invalid date format. Please use 'YYYY-MM-DD' format.")
+
+    try:
+        db.session.commit()
+        return jsonify(donation.repr()), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify(error=str(e)), 500
+
+@app.route('/donations/<int:donation_id>', methods=['DELETE'])
+def delete_donation(donation_id):
+    donation = Donation.query.get_or_404(donation_id, description="Donation not found")
+    db.session.delete(donation)
+    db.session.commit()
+    return jsonify({'message': 'Donation deleted successfully'}), 200
+
 
 
 if __name__ == '__main__':

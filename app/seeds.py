@@ -1,7 +1,9 @@
 from datetime import datetime
 from random import choice
 from app import create_app
-from models import db, Organization
+from models import db, Organization,User,Donation
+from datetime import datetime, timedelta
+import random
 
 # Create the Flask app
 app = create_app()
@@ -108,4 +110,156 @@ with app.app_context():
 
     db.session.commit()
 
-    print("🏢 Done seeding!")
+   
+ 
+    users_data = [
+
+    {"username": "KinyuaA", "email": "alice.kinyua@fakemail.com", "password": "kinyuaSecure1!"},
+    {"username": "OtienoZ", "email": "zachary.otieno@fakemail.com", "password": "otienoZee123!"},
+    {"username": "KipronoE", "email": "esther.kiprono@fakemail.com", "password": "kipronoPass789!"},
+    {"username": "OdhiamboR", "email": "ruth.odhiambo@fakemail.com", "password": "odhiamboRuth!456"},
+    {"username": "MainaS", "email": "simon.maina@fakemail.com", "password": "mainaS3cur3!"},
+    {"username": "OchiengD", "email": "diana.ochieng@fakemail.com", "password": "ochiengPass!321"},
+    {"username": "KimathiJ", "email": "julius.kimathi@fakemail.com", "password": "kimathiJ254!!"},
+    {"username": "WambuiG", "email": "grace.wambui@fakemail.com", "password": "wambuiG!Password"},
+    {"username": "MbogoL", "email": "lucas.mbogo@fakemail.com", "password": "lucasMbogo123!"},
+    {"username": "OkothP", "email": "paul.okoth@fakemail.com", "password": "okothPaul!987"}
+
+
+
+]
+
+    for data in users_data:
+         existing_user = User.query.filter((User.username == data['username']) | (User.email == data['email'])).first()
+         if not existing_user:
+           user = User(**data)
+           db.session.add(user)
+
+    db.session.commit()
+
+def seed_donations():
+    donations_data = [
+    {
+        "donor_user_id": 1,
+        "organization_id": 1,
+        "amount": 2500.00,
+        "donation_type": "One-time",
+        "anonymous": False,
+        "date": "2023-10-01",
+        "transaction_id": "TXN12345"
+    },
+    {
+        "donor_user_id": 2,
+        "organization_id": 2,
+        "amount": 1500.00,
+        "donation_type": "Monthly",
+        "anonymous": True,
+        "date": "2023-10-02",
+        "transaction_id": "TXN12346"
+    },
+    {
+        "donor_user_id": 3,
+        "organization_id": 3,
+        "amount": 3000.00,
+        "donation_type": "Annual",
+        "anonymous": False,
+        "date": "2023-10-03",
+        "transaction_id": "TXN12347"
+    },
+    {
+        "donor_user_id": 4,
+        "organization_id": 4,
+        "amount": 5000.00,
+        "donation_type": "One-time",
+        "anonymous": True,
+        "date": "2023-10-04",
+        "transaction_id": "TXN12348"
+    },
+    {
+        "donor_user_id": 5,
+        "organization_id": 5,
+        "amount": 7000.00,
+        "donation_type": "Monthly",
+        "anonymous": False,
+        "date": "2023-10-05",
+        "transaction_id": "TXN12349"
+    },
+
+    {
+        "donor_user_id": 6,
+        "organization_id": 6,
+        "amount": 7050.00,
+        "donation_type": "Monthly",
+        "anonymous": False,
+        "date": "2023-10-06",
+        "transaction_id": "TXN12350"
+    },
+    {
+        "donor_user_id": 7,
+        "organization_id": 7,
+        "amount": 7600.00,
+        "donation_type": "Monthly",
+        "anonymous": False,
+        "date": "2023-10-05",
+        "transaction_id": "TXN12351"
+    },
+    {
+        "donor_user_id": 8,
+        "organization_id": 8,
+        "amount": 850.00,
+        "donation_type": "Monthly",
+        "anonymous": False,
+        "date": "2023-10-05",
+        "transaction_id": "TXN12352"
+    },
+    {
+        "donor_user_id": 9,
+        "organization_id": 9,
+        "amount": 7590.00,
+        "donation_type": "Monthly",
+        "anonymous": False,
+        "date": "2023-10-05",
+        "transaction_id": "TXN12353"
+    },
+    {
+        "donor_user_id": 10,
+        "organization_id":10,
+        "amount": 750.00,
+        "donation_type": "Monthly",
+        "anonymous": False,
+        "date": "2023-10-05",
+        "transaction_id": "TXN12354"
+    },
+]
+
+def seed_donations():
+    print("💰 Seeding donations...")
+
+    user_ids = [user.id for user in User.query.all()]
+    organization_ids = [organization.id for organization in Organization.query.all()]
+
+    donations_data = [
+        {
+            "donor_user_id": choice(user_ids),
+            "organization_id": choice(organization_ids),
+            "amount": random.uniform(50.0, 5000.0),  
+            "donation_type": choice(["One-time", "Monthly", "Annual"]),
+            "anonymous": choice([True, False]),
+            "date": datetime.utcnow() - timedelta(days=random.randint(0, 365)),
+            "transaction_id": f"TXN{random.randint(100000, 999999)}"
+        } for _ in range(20)  
+    ]
+
+    for data in donations_data:
+        donation = Donation(**data)
+        db.session.add(donation)
+
+    db.session.commit()
+
+
+with app.app_context():
+    seed_donations()
+
+
+
+print("🏢 Done seeding!")
