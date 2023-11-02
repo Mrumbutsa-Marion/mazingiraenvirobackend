@@ -1,0 +1,23 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "description": "environment applicatin",
+      "version": "1.0.0",
+      "title": "Mazingira Application",
+      "license": {
+        "name": "MIT",
+        "url": "https://opensource.org/licenses/MIT"
+      }
+},
+"tags": [
+  {
+    "name": "Products API",
+    "description": "Test API"
+  }
+],
+ "servers": [
+      {
+      "url": "/"
+      }
+]
+}
