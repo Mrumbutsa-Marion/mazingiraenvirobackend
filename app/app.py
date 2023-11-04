@@ -134,7 +134,7 @@ def get_organization(organization_id):
 
         #donations
 
-@app.route('/donations', methods=['GET']) #admin only
+@app.route('/donations', methods=['GET']) #admin and organization
 def get_donations():
     organization_id = request.args.get('organization_id')
     if organization_id:
@@ -154,7 +154,7 @@ def get_donations():
     return jsonify(donations_list), 200
 
 
-@app.route('/donations/<int:donation_id>', methods=['GET'])
+@app.route('/donations/<int:donation_id>', methods=['GET']) 
 def get_donation(donation_id):
     donation = Donation.query.get_or_404(donation_id, description="Donation not found")
     donation_dict = {
@@ -170,9 +170,7 @@ def get_donation(donation_id):
     return jsonify(donation_dict), 200
 
 
-from flask import Flask, request, jsonify, abort
-
-@app.route('/donations/<int:donation_id>', methods=['PUT'])
+@app.route('/donations/<int:donation_id>', methods=['PUT']) #admin only
 def update_donation(donation_id):
     if not request.is_json:
         return jsonify({"msg": "Missing JSON in request"}), 400
@@ -200,14 +198,112 @@ def update_donation(donation_id):
         db.session.rollback()
         return jsonify(error=str(e)), 500
 
-@app.route('/donations/<int:donation_id>', methods=['DELETE'])
+@app.route('/donations/<int:donation_id>', methods=['DELETE']) #admin only
 def delete_donation(donation_id):
     donation = Donation.query.get_or_404(donation_id, description="Donation not found")
     db.session.delete(donation)
     db.session.commit()
     return jsonify({'message': 'Donation deleted successfully'}), 200
 
+    #beneficiaries
+@app.route('/beneficiaries', methods=['GET']) #admin and organization
+def get_beneficiaries():
+    beneficiaries = Beneficiary.query.all()
+    beneficiaries_list = [{
+        'id': beneficiary.id,
+        'organization_id': beneficiary.organization_id,
+        'name': beneficiary.name,
+        'description': beneficiary.description,
+        'inventory_received': beneficiary.inventory_received
+    } for beneficiary in beneficiaries]
 
+    return jsonify(beneficiaries_list), 200
+
+@app.route('/beneficiaries/<int:beneficiary_id>', methods=['GET']) #admin and organization
+def get_beneficiary(beneficiary_id):
+    beneficiary = Beneficiary.query.get_or_404(beneficiary_id)
+    beneficiary_data = {
+        'id': beneficiary.id,
+        'organization_id': beneficiary.organization_id,
+        'name': beneficiary.name,
+        'description': beneficiary.description,
+        'inventory_received': beneficiary.inventory_received
+    }
+
+    return jsonify(beneficiary_data), 200    
+
+@app.route('/beneficiaries', methods=['POST']) #organisation only
+def create_beneficiary():
+    data = request.json
+    organization_id = data.get('organization_id')
+
+    if not organization_id or not isinstance(organization_id, int):
+        return jsonify({'error': 'Invalid organization_id'}), 400
+
+    organization = Organization.query.get(organization_id)
+    if not organization:
+        return jsonify({'error': 'Organization not found'}), 404
+
+    beneficiary = Beneficiary(
+        organization_id=organization_id,
+        name=data.get('name'),
+        description=data.get('description'),
+        inventory_received=data.get('inventory_received')
+    )
+
+    db.session.add(beneficiary)
+    try:
+        db.session.commit()
+        return jsonify({'beneficiary_id': beneficiary.id}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/beneficiaries/<int:beneficiary_id>', methods=['PUT']) #organisation only
+def update_beneficiary(beneficiary_id):
+    data = request.json
+    beneficiary = Beneficiary.query.get(beneficiary_id)
+
+    if not beneficiary:
+        return jsonify({'error': 'Beneficiary not found'}), 404
+
+    organization_id = data.get('organization_id')
+    if organization_id:
+        organization = Organization.query.get(organization_id)
+        if not organization:
+            return jsonify({'error': 'Organization not found'}), 404
+        beneficiary.organization_id = organization_id
+
+    name = data.get('name')
+    if name:
+        beneficiary.name = name
+
+    description = data.get('description')
+    if description:
+        beneficiary.description = description
+
+    inventory_received = data.get('inventory_received')
+    if inventory_received:
+        beneficiary.inventory_received = inventory_received
+
+    try:
+        db.session.commit()
+        return jsonify({'message': 'Beneficiary updated successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+    
+
+@app.route('/beneficiaries/<int:beneficiary_id>', methods=['DELETE']) #organisation only
+def delete_beneficiary(beneficiary_id):
+    beneficiary = Beneficiary.query.get_or_404(beneficiary_id)
+    db.session.delete(beneficiary)
+    db.session.commit()
+
+    return jsonify({'message': 'Beneficiary deleted successfully'}), 200    
+     
 
 if __name__ == '__main__':
     app.run(port=5003, debug=True)
