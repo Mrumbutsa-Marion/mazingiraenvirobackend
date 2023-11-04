@@ -118,9 +118,12 @@ class Reminder(db.Model):
 class Payment(db.Model):
     __tablename__ = 'payment'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    donation_id = db.Column(db.Integer, db.ForeignKey('donation.id'))
+    donor_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'))
+    amount = db.Column(db.Numeric(10, 2), nullable=False)
     payment_method = db.Column(db.String(50), nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    transaction_id = db.Column(db.String(120), unique=True, nullable=True)
 
-    def repr(self):
-        return f"<Payment(payment_method='{self.payment_method}')>"
-        
+    def __repr__(self):
+        return f"<Payment(amount={self.amount})>"
