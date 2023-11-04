@@ -22,8 +22,10 @@ werkzeug = "==2.2.2"
 jsonify = "*"
 dnspython = "==2.2.1"
 flask-wtf = "==1.1.1"
+flask-swagger-ui = "*"
+flask-cors = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.8"
+python_version = "3.10"

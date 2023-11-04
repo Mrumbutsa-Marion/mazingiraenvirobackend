@@ -1,7 +1,10 @@
 from datetime import datetime
 from random import choice
 from app import create_app
-from models import db, Organization
+from models import db, Organization,User,Donation,Beneficiary,Inventory
+from datetime import datetime, timedelta
+import random
+import string
 
 # Create the Flask app
 app = create_app()
@@ -108,4 +111,235 @@ with app.app_context():
 
     db.session.commit()
 
-    print("🏢 Done seeding!")
+   
+ 
+    users_data = [
+
+    {"username": "KinyuaA", "email": "alice.kinyua@fakemail.com", "password": "kinyuaSecure1!"},
+    {"username": "OtienoZ", "email": "zachary.otieno@fakemail.com", "password": "otienoZee123!"},
+    {"username": "KipronoE", "email": "esther.kiprono@fakemail.com", "password": "kipronoPass789!"},
+    {"username": "OdhiamboR", "email": "ruth.odhiambo@fakemail.com", "password": "odhiamboRuth!456"},
+    {"username": "MainaS", "email": "simon.maina@fakemail.com", "password": "mainaS3cur3!"},
+    {"username": "OchiengD", "email": "diana.ochieng@fakemail.com", "password": "ochiengPass!321"},
+    {"username": "KimathiJ", "email": "julius.kimathi@fakemail.com", "password": "kimathiJ254!!"},
+    {"username": "WambuiG", "email": "grace.wambui@fakemail.com", "password": "wambuiG!Password"},
+    {"username": "MbogoL", "email": "lucas.mbogo@fakemail.com", "password": "lucasMbogo123!"},
+    {"username": "OkothP", "email": "paul.okoth@fakemail.com", "password": "okothPaul!987"}
+
+
+
+]
+
+    for data in users_data:
+         existing_user = User.query.filter((User.username == data['username']) | (User.email == data['email'])).first()
+         if not existing_user:
+           user = User(**data)
+           db.session.add(user)
+
+    db.session.commit()
+
+def seed_donations():
+    donations_data = [
+    {
+        "donor_user_id": 1,
+        "organization_id": 1,
+        "amount": 2500.00,
+        "donation_type": "One-time",
+        "anonymous": False,
+        "date": "2023-10-01",
+        "transaction_id": "TXN12345"
+    },
+    {
+        "donor_user_id": 2,
+        "organization_id": 2,
+        "amount": 1500.00,
+        "donation_type": "Monthly",
+        "anonymous": True,
+        "date": "2023-10-02",
+        "transaction_id": "TXN12346"
+    },
+    {
+        "donor_user_id": 3,
+        "organization_id": 3,
+        "amount": 3000.00,
+        "donation_type": "Annual",
+        "anonymous": False,
+        "date": "2023-10-03",
+        "transaction_id": "TXN12347"
+    },
+    {
+        "donor_user_id": 4,
+        "organization_id": 4,
+        "amount": 5000.00,
+        "donation_type": "One-time",
+        "anonymous": True,
+        "date": "2023-10-04",
+        "transaction_id": "TXN12348"
+    },
+    {
+        "donor_user_id": 5,
+        "organization_id": 5,
+        "amount": 7000.00,
+        "donation_type": "Monthly",
+        "anonymous": False,
+        "date": "2023-10-05",
+        "transaction_id": "TXN12349"
+    },
+
+    {
+        "donor_user_id": 6,
+        "organization_id": 6,
+        "amount": 7050.00,
+        "donation_type": "Monthly",
+        "anonymous": False,
+        "date": "2023-10-06",
+        "transaction_id": "TXN12350"
+    },
+    {
+        "donor_user_id": 7,
+        "organization_id": 7,
+        "amount": 7600.00,
+        "donation_type": "Monthly",
+        "anonymous": False,
+        "date": "2023-10-05",
+        "transaction_id": "TXN12351"
+    },
+    {
+        "donor_user_id": 8,
+        "organization_id": 8,
+        "amount": 850.00,
+        "donation_type": "Monthly",
+        "anonymous": False,
+        "date": "2023-10-05",
+        "transaction_id": "TXN12352"
+    },
+    {
+        "donor_user_id": 9,
+        "organization_id": 9,
+        "amount": 7590.00,
+        "donation_type": "Monthly",
+        "anonymous": False,
+        "date": "2023-10-05",
+        "transaction_id": "TXN12353"
+    },
+    {
+        "donor_user_id": 10,
+        "organization_id":10,
+        "amount": 750.00,
+        "donation_type": "Monthly",
+        "anonymous": False,
+        "date": "2023-10-05",
+        "transaction_id": "TXN12354"
+    },
+]
+
+def seed_donations():
+    print("💰 Seeding donations...")
+
+    user_ids = [user.id for user in User.query.all()]
+    organization_ids = [organization.id for organization in Organization.query.all()]
+
+    donations_data = [
+        {
+            "donor_user_id": choice(user_ids),
+            "organization_id": choice(organization_ids),
+            "amount": random.uniform(50.0, 5000.0),  
+            "donation_type": choice(["One-time", "Monthly", "Annual"]),
+            "anonymous": choice([True, False]),
+            "date": datetime.utcnow() - timedelta(days=random.randint(0, 365)),
+            "transaction_id": f"TXN{random.randint(100000, 999999)}"
+        } for _ in range(20)  
+    ]
+
+    for data in donations_data:
+        donation = Donation(**data)
+        db.session.add(donation)
+
+    db.session.commit()
+
+
+with app.app_context():
+    seed_donations()
+
+kenyan_names = [
+    "Wanjiru Muthoni", "Kamau Njoroge", "Mwangi Kimani", "Njeri Wangari",
+    "Wambui Waweru", "Gachoka Muturi", "Nyawira Maina", "Makena Njeru",
+    "Onyango Otieno", "Atieno Akoth", "Akinyi Omondi", "Adhiambo Omollo",
+    "Otieno Owuor", "Ochieng Okoth", "Kipchoge Keino", "Chebet Kosgei",
+    "Kiplagat Bett", "Tanui Cheruiyot", "Cheruiyot Barasa", "Maritim Kigen"
+]
+
+descriptions = [
+    "A local farmer who contributes to community agriculture programs.",
+    "A talented artist who teaches painting to children in the community.",
+    "A single mother of three who actively participates in local self-help groups.",
+    "A dedicated teacher who has been providing free education to underprivileged children.",
+    "A community health worker who has been instrumental in local vaccination drives.",
+    "An entrepreneur who has started a small business with the help of community loans.",
+    "A young athlete training for national competitions with hopes of representing Kenya.",
+    "A skilled carpenter providing affordable furniture to local schools and hospitals."
+]
+
+inventory_received_examples = [
+    "5 bags of maize, 10 kgs of beans, 2 blankets",
+    "Art supplies including paints, brushes, and canvases",
+    "Monthly food ration, school supplies for the children",
+    "Books, desks, and learning materials for the classroom",
+    "Medical kits, gloves, and face masks for health campaigns",
+    "Seed capital fund, business training manuals",
+    "Sports gear, running shoes, and athletic clothing",
+    "Woodworking tools, safety equipment, and varnish"
+]
+
+def clear_beneficiaries():
+    try:
+        num_rows_deleted = db.session.query(Beneficiary).delete()
+        db.session.commit()
+        print(f"Cleared {num_rows_deleted} rows from Beneficiary table.")
+    except Exception as e:
+        print(f"Error clearing Beneficiary table: {e}")
+        db.session.rollback()
+
+def seed_beneficiaries(num):
+    for _ in range(num):
+        name = random.choice(kenyan_names)
+        description = random.choice(descriptions)
+        inventory_received = random.choice(inventory_received_examples)
+        new_beneficiary = Beneficiary(name=name, description=description, inventory_received=inventory_received)
+        db.session.add(new_beneficiary)
+    db.session.commit()    
+
+app = create_app()
+with app.app_context():
+    db.init_app(app)
+    db.create_all()
+    clear_beneficiaries()
+    seed_beneficiaries(50)
+
+
+def seed_inventory():
+    environmental_inventory = [
+        Inventory(beneficiary_id=1, description='Tree saplings for reforestation', quantity=100, date_received=datetime.utcnow()),
+        Inventory(beneficiary_id=1, description='Gardening tools for community garden', quantity=10, date_received=datetime.utcnow()),
+        Inventory(beneficiary_id=2, description='Recycling bins for plastic waste', quantity=50, date_received=datetime.utcnow()),
+        Inventory(beneficiary_id=2, description='Composting kits for organic waste', quantity=30, date_received=datetime.utcnow()),
+        Inventory(beneficiary_id=3, description='Water testing kits for river clean-up', quantity=15, date_received=datetime.utcnow()),
+        Inventory(beneficiary_id=3, description='Reusable bags for litter collection', quantity=200, date_received=datetime.utcnow()),
+        Inventory(beneficiary_id=4, description='Biodegradable planting pots', quantity=500, date_received=datetime.utcnow()),
+        Inventory(beneficiary_id=4, description='Solar-powered outdoor lights', quantity=25, date_received=datetime.utcnow()),
+        Inventory(beneficiary_id=5, description='Educational materials on recycling', quantity=1000, date_received=datetime.utcnow()),
+        Inventory(beneficiary_id=5, description='Wildlife tracking collars for research', quantity=5, date_received=datetime.utcnow()),
+    ]
+    with app.app_context():
+     db.session.bulk_save_objects(environmental_inventory)
+
+     try:
+        db.session.commit()
+        print('Environmental inventory seeded successfully.')
+     except Exception as e:
+        db.session.rollback()
+        print('An error occurred while seeding environmental inventory:', str(e))
+seed_inventory()
+
+
+print("🏢 Done seeding!")
