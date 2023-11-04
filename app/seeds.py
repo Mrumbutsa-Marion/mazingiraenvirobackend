@@ -1,7 +1,7 @@
 from datetime import datetime
 from random import choice
 from app import create_app
-from models import db, Organization
+from models import db, Organization ,User
 
 # Create the Flask app
 app = create_app()
@@ -12,6 +12,29 @@ with app.app_context():
     db.create_all()
 
     db.session.commit()
+
+    # Step 6: Seeding users
+    print("👤 Seeding users...")
+    users_data = [
+        {
+            "username": "John Doe",
+            "email": "john@example.com",
+            "password": "password1"
+        },
+        {
+            "username": "Jane Smith",
+            "email": "jane@example.com",
+            "password": "password2"
+        }
+    ]
+
+    for data in users_data:
+        user = User(**data)
+        db.session.add(user)
+
+    db.session.commit()
+
+    print("🏢💰📦👤 Done seeding!")
 
     # Step 3: Seeding organizations
     print("🏢 Seeding organizations...")
