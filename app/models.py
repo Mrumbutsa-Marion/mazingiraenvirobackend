@@ -4,7 +4,6 @@ from sqlalchemy import DateTime, ForeignKey
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 
-
 db = SQLAlchemy()
 
 class User(db.Model):
@@ -114,3 +113,14 @@ class Reminder(db.Model):
 
     def repr(self):
         return f"<Reminder(user_id={self.user_id}, organization_id={self.organization_id})>"
+    
+
+class Payment(db.Model):
+    __tablename__ = 'payment'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    donation_id = db.Column(db.Integer, db.ForeignKey('donation.id'))
+    payment_method = db.Column(db.String(50), nullable=False)
+
+    def repr(self):
+        return f"<Payment(payment_method='{self.payment_method}')>"
+        
