@@ -303,7 +303,68 @@ def delete_beneficiary(beneficiary_id):
     db.session.commit()
 
     return jsonify({'message': 'Beneficiary deleted successfully'}), 200    
-     
+ 
+ #inventory routes
+@app.route('/inventory', methods=['GET'])
+def get_inventory():
+    inventory_items = Inventory.query.all()
+    return jsonify([{
+        'id': item.id,
+        'beneficiary_id': item.beneficiary_id,
+        'description': item.description,
+        'quantity': item.quantity,
+        'date_received': item.date_received.strftime('%Y-%m-%d')
+    } for item in inventory_items]), 200  
+  
+@app.route('/inventory/<int:inventory_id>', methods=['GET'])
+def get_inventory_item(inventory_id):
+    inventory_item = Inventory.query.get_or_404(inventory_id)
+    return jsonify({
+        'id': inventory_item.id,
+        'beneficiary_id': inventory_item.beneficiary_id,
+        'description': inventory_item.description,
+        'quantity': inventory_item.quantity,
+        'date_received': inventory_item.date_received.strftime('%Y-%m-%d')
+    }), 200
+
+@app.route('/inventory', methods=['POST'])
+def add_inventory():
+    new_inventory = Inventory(
+        beneficiary_id=request.json['beneficiary_id'],
+        description=request.json['description'],
+        quantity=request.json['quantity'],
+        date_received=datetime.strptime(request.json['date_received'], '%Y-%m-%d') if request.json.get('date_received') else datetime.utcnow()
+    )
+    db.session.add(new_inventory)
+    db.session.commit()
+    return jsonify(new_inventory.id), 201
+
+@app.route('/inventory/<int:inventory_id>', methods=['PUT'])
+def update_inventory(inventory_id):
+    inventory_item = Inventory.query.get_or_404(inventory_id)
+    data = request.json
+    if 'description' in data:
+        inventory_item.description = data['description']
+    if 'quantity' in data:
+        inventory_item.quantity = data['quantity']
+    if 'date_received' in data:
+        inventory_item.date_received = datetime.strptime(data['date_received'], '%Y-%m-%d')
+    
+    db.session.commit()
+    return jsonify({
+        'id': inventory_item.id,
+        'beneficiary_id': inventory_item.beneficiary_id,
+        'description': inventory_item.description,
+        'quantity': inventory_item.quantity,
+        'date_received': inventory_item.date_received.strftime('%Y-%m-%d')
+    }), 200
+
+@app.route('/inventory/<int:inventory_id>', methods=['DELETE'])
+def delete_inventory(inventory_id):
+    inventory_item = Inventory.query.get_or_404(inventory_id)
+    db.session.delete(inventory_item)
+    db.session.commit()
+    return jsonify({'message': 'Inventory deleted'}), 200
 
 if __name__ == '__main__':
     app.run(port=5003, debug=True)

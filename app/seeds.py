@@ -1,7 +1,7 @@
 from datetime import datetime
 from random import choice
 from app import create_app
-from models import db, Organization,User,Donation,Beneficiary
+from models import db, Organization,User,Donation,Beneficiary,Inventory
 from datetime import datetime, timedelta
 import random
 import string
@@ -307,7 +307,7 @@ def seed_beneficiaries(num):
         inventory_received = random.choice(inventory_received_examples)
         new_beneficiary = Beneficiary(name=name, description=description, inventory_received=inventory_received)
         db.session.add(new_beneficiary)
-    db.session.commit()
+    db.session.commit()    
 
 app = create_app()
 with app.app_context():
@@ -315,5 +315,31 @@ with app.app_context():
     db.create_all()
     clear_beneficiaries()
     seed_beneficiaries(50)
+
+
+def seed_inventory():
+    environmental_inventory = [
+        Inventory(beneficiary_id=1, description='Tree saplings for reforestation', quantity=100, date_received=datetime.utcnow()),
+        Inventory(beneficiary_id=1, description='Gardening tools for community garden', quantity=10, date_received=datetime.utcnow()),
+        Inventory(beneficiary_id=2, description='Recycling bins for plastic waste', quantity=50, date_received=datetime.utcnow()),
+        Inventory(beneficiary_id=2, description='Composting kits for organic waste', quantity=30, date_received=datetime.utcnow()),
+        Inventory(beneficiary_id=3, description='Water testing kits for river clean-up', quantity=15, date_received=datetime.utcnow()),
+        Inventory(beneficiary_id=3, description='Reusable bags for litter collection', quantity=200, date_received=datetime.utcnow()),
+        Inventory(beneficiary_id=4, description='Biodegradable planting pots', quantity=500, date_received=datetime.utcnow()),
+        Inventory(beneficiary_id=4, description='Solar-powered outdoor lights', quantity=25, date_received=datetime.utcnow()),
+        Inventory(beneficiary_id=5, description='Educational materials on recycling', quantity=1000, date_received=datetime.utcnow()),
+        Inventory(beneficiary_id=5, description='Wildlife tracking collars for research', quantity=5, date_received=datetime.utcnow()),
+    ]
+    with app.app_context():
+     db.session.bulk_save_objects(environmental_inventory)
+
+     try:
+        db.session.commit()
+        print('Environmental inventory seeded successfully.')
+     except Exception as e:
+        db.session.rollback()
+        print('An error occurred while seeding environmental inventory:', str(e))
+seed_inventory()
+
 
 print("🏢 Done seeding!")
