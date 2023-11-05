@@ -132,6 +132,47 @@ def get_organization(organization_id):
 
     return jsonify(organization_data)
 
+#-------------------routes for organisattion application-------------------
+@app.route('/apply', methods=['POST'])
+def apply():
+     data = request.json
+     new_organization = Organization(
+        name=data.get('name'),
+        description=data.get('description'),
+        contact_information=data.get('contact_information'),
+        image_url=data.get('image_url'),
+        status='Pending',
+        isAdminApproved=False
+     )
+     db.session.add(new_organization)
+     db.session.commit()
+     return jsonify({"message": "Application submitted successfully!"}), 201
+
+@app.route('/admin/review', methods=['GET'])
+def review_applications():
+    pending_orgs = Organization.query.filter_by(isAdminApproved=False).all()
+    pending_orgs_json = [
+        {
+            'id': org.id,
+            'name': org.name,
+            'description': org.description,
+            'contact_information': org.contact_information,
+            'image_url': org.image_url,
+            'status': org.status
+        } for org in pending_orgs
+    ]
+    return jsonify(pending_orgs_json)
+
+@app.route('/admin/approve/<int:org_id>', methods=['POST'])
+def approve_application(org_id):
+    org = Organization.query.get_or_404(org_id)
+    org.status = 'Approved'
+    org.isAdminApproved = True
+    db.session.commit()
+    return jsonify({"message": "Organization approved successfully!"}), 200
+
+#----------------------------------------------------------------------------------------
+
         #donations
 
 @app.route('/donations', methods=['GET']) #admin and organization
