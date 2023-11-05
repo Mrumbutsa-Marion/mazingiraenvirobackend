@@ -2,7 +2,7 @@ from datetime import datetime
 from random import choice,random
 from datetime import timedelta
 from app import create_app
-from models import db, Organization ,User,Inventory,Beneficiary,Donation,Payment
+from models import db, Organization ,User,Inventory,Beneficiary,Donation,Payment,Story,Reminder
 
 # Create the Flask app
 app = create_app()
@@ -251,51 +251,70 @@ def seed_donations():
 
     db.session.commit()
 
+      
       # Step 7: Seeding payments
     print("💳 Seeding payments...")
-    payments_data = [
-        {
-            "donation_id": 1,
-            "payment_method": "Credit Card"
-        },
-        {
-            "donation_id": 2,
-            "payment_method": "PayPal"
-        }
-    ]
+    def seed_payments():
+        payments_data = [
+            {
+                "donation_id": 1,
+                "organization_id": 1,
+                "user_id": 1,
+                "payment_method": "Credit Card",
+                "transaction_id": "ABC123",
+                "date": datetime.utcnow()
+            },
+            {
+                "donation_id": 2,
+                "organization_id": 2,
+                "user_id": 2,
+                "payment_method": "PayPal",
+                "transaction_id": "XYZ789",
+                "date": datetime.utcnow()
+            }
+        ]
 
-    for data in payments_data:
-        payment = Payment(**data)
-        db.session.add(payment)
+        for data in payments_data:
+            payment = Payment(**data)
+            db.session.add(payment)
 
-    db.session.commit()
+        db.session.commit()
 
-    print("🏢💰📦👤💳 Done seeding!")
-      # Step 7: Seeding payments
-    print("💳 Seeding payments...")
-    payments_data = [
-        {
-            "donation_id": 1,
-            "organization_id": 1,
-            "user_id": 1,
-            "payment_method": "Credit Card",
-            "transaction_id": "ABC123",
-            "date": datetime.utcnow()
-        },
-        {
-            "donation_id": 2,
-            "organization_id": 2,
-            "user_id": 2,
-            "payment_method": "PayPal",
-            "transaction_id": "XYZ789",
-            "date": datetime.utcnow()
-        }
-    ]
-
-    for data in payments_data:
-        payment = Payment(**data)
-        db.session.add(payment)
-
-    db.session.commit()
+    seed_payments()
 
     print("🏢🤲💰💳 Done seeding!")
+    
+
+
+     # Step 8: Seeding stories
+    print("📖 Seeding stories...")
+    def seed_stories():
+        stories_data = [
+            {
+                "organization_id": 1,
+                "title": "Example Story 1",
+                "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut pharetra quis tellus eu interdum.",
+                "images": "https://example.com/story1.jpg",
+                "date_created": datetime.utcnow()
+            },
+            {
+                "organization_id": 2,
+                "title": "Example Story 2",
+                "content": "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.",
+                "images": "https://example.com/story2.jpg",
+                "date_created": datetime.utcnow()
+            }
+        ]
+
+        for data in stories_data:
+            story = Story(**data)
+            db.session.add(story)
+
+        db.session.commit()
+
+    seed_stories()
+
+    print("🏢🤲💰💳 Done seeding!")
+    # Step 9: Seeding reminders
+    
+
