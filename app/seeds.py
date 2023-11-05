@@ -316,5 +316,32 @@ def seed_donations():
 
     print("🏢🤲💰💳 Done seeding!")
     # Step 9: Seeding reminders
-    
+     # Step 9: Seeding reminders
+    print("⏰ Seeding reminders...")
+    def seed_reminders():
+        reminders_data = [
+            {
+                "user_id": 1,
+                "organization_id": 1,
+                "remind_on": datetime.utcnow().date(),
+                "message": "Don't forget to attend the event tomorrow!"
+            },
+            {
+                "user_id": 2,
+                "organization_id": 2,
+                "remind_on": datetime.utcnow().date(),
+                "message": "Volunteer shift starts in 2 hours. Be there on time!"
+            }
+        ]
+
+        for data in reminders_data:
+            reminder = Reminder(**data)
+            db.session.add(reminder)
+
+        db.session.commit()
+
+    seed_reminders()
+
+    print("🏢🤲💰💳⏰ Done seeding!")
+
 
