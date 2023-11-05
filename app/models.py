@@ -38,7 +38,7 @@ class Organization(db.Model):
     __tablename__ = 'organization'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     image_url = db.Column(db.String, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text, nullable=False)
     contact_information = db.Column(db.String(255), nullable=False)
@@ -58,10 +58,11 @@ class Donation(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     donor_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'))
-    amount = db.Column(db.Numeric(10, 2), nullable=False)
+    amount = db.Column(db.Numeric(10, 2), nullable=False)#intervals
     donation_type = db.Column(db.String(50), nullable=False)
     anonymous = db.Column(db.Boolean, default=False)
     date = db.Column(db.Date, nullable=False)
+
     transaction_id = db.Column(db.String(120), unique=True, nullable=True)  # Optional field for transaction ID
 
     def repr(self):

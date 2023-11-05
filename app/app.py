@@ -40,59 +40,6 @@ def create_app():
     return app
 
 app = create_app()
-
-# Define a WTForms class for user signup
-class SignupForm(FlaskForm):
-    user_name = StringField('user_name', validators=[DataRequired()])
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    submit = SubmitField('Sign Up')
-
-# Define a WTForms class for user login
-class LoginForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    submit = SubmitField('Log In')
-
-@app.route('/')
-def home():
-    return "Welcome to my app"
-
-@app.route('/signup', methods=['POST'])
-def signup():
-    data = request.json
-
-    user_name = data.get('user_name')
-    email = data.get('email')
-    password = data.get('password')
-
-    existing_user = User.query.filter_by(email=email).first()
-    if existing_user:
-        return jsonify({'message': 'User with this email already exists'}), 409
-
-    hashed_password = generate_password_hash(password)
-
-    new_user = User(user_name=user_name, email=email, password=hashed_password)
-
-    db.session.add(new_user)
-    db.session.commit()
-
-    return jsonify({'message': 'User created successfully'})
-
-@app.route('/login', methods=['POST'])
-def login():
-    data = request.json
-
-    email = data.get('email')
-    password = data.get('password')
-
-    user = User.query.filter_by(email=email).first()
-
-    if not user or not check_password_hash(user.password, password):
-        return jsonify({'message': 'Invalid credentials'}), 401
-
-    return jsonify({'message': 'Login successful'})
-
 # Organizations
 @app.route('/organizations', methods=['GET'])
 def get_organizations():
