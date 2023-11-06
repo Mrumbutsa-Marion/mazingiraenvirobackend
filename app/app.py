@@ -171,6 +171,14 @@ def approve_application(org_id):
     db.session.commit()
     return jsonify({"message": "Organization approved successfully!"}), 200
 
+@app.route('/admin/reject/<int:org_id>', methods=['POST'])
+def reject_application(org_id):
+    org = Organization.query.get_or_404(org_id)
+    org.status = 'Rejected'
+    db.session.commit()
+    return jsonify({"message": "Organization rejected successfully!"}), 200
+   
+
 #----------------------------------------------------------------------------------------
 
         #donations
