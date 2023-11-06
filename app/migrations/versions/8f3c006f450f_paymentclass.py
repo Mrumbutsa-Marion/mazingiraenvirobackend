@@ -1,8 +1,8 @@
-"""payment
+"""paymentclass
 
-Revision ID: 31e7374ebd31
+Revision ID: 8f3c006f450f
 Revises: 
-Create Date: 2023-11-05 22:39:28.279062
+Create Date: 2023-11-06 11:57:30.535399
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '31e7374ebd31'
+revision = '8f3c006f450f'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -83,6 +83,8 @@ def upgrade():
     sa.Column('payment_method', sa.String(length=50), nullable=False),
     sa.Column('date', sa.Date(), nullable=False),
     sa.Column('transaction_id', sa.String(length=120), nullable=True),
+    sa.Column('status', sa.String(length=20), nullable=False),
+    sa.Column('is_anonymous', sa.Boolean(), nullable=False),
     sa.ForeignKeyConstraint(['donor_user_id'], ['user.id'], ),
     sa.ForeignKeyConstraint(['organization_id'], ['organization.id'], ),
     sa.PrimaryKeyConstraint('id'),
