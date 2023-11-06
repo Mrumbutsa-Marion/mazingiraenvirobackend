@@ -132,6 +132,21 @@ def get_organization(organization_id):
 
     return jsonify(organization_data)
 
+@app.route('/organizations/<int:org_id>', methods=['DELETE'])
+def delete_organization(org_id):
+    organization = Organization.query.get(org_id)
+    if organization is None:
+        return jsonify({'error': 'Organization not found'}), 404
+
+    try:
+        db.session.delete(organization)
+        db.session.commit()
+        return jsonify({'message': 'Organization deleted successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Unable to delete organization', 'details': str(e)}), 500
+
+
 #-------------------routes for organisattion application-------------------
 @app.route('/apply', methods=['POST'])
 def apply():
