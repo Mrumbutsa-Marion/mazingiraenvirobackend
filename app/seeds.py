@@ -7,8 +7,6 @@ from models import db, Organization ,User,Inventory,Beneficiary,Donation,Payment
 
       # Create the Flask app
 app = create_app()
-
-    
 with app.app_context():
     print("📖 Seeding stories...")
     stories_data = [
@@ -93,3 +91,131 @@ with app.app_context():
 
 print("📖 Stories seeded successfully!")
 
+# Create the Flask app
+app = create_app()
+with app.app_context():
+    print("📖 Seeding payments...")
+    payments_data = [
+    {
+        "donor_user_id": 1,
+        "organization_id": 1,
+        "amount": 100.00,
+        "payment_method": "Credit Card",
+        "date": datetime.utcnow(),
+        "transaction_id": "ABC123",
+        "status": "success",
+        "is_anonymous": False
+    },
+    {
+        "donor_user_id": 2,
+        "organization_id": 2,
+        "amount": 50.00,
+        "payment_method": "PayPal",
+        "date": datetime.utcnow(),
+        "transaction_id": "456",
+        "status": "pending",
+        "is_anonymous": True
+    },
+    {
+        "donor_user_id": 3,
+        "organization_id": 3,
+        "amount": 200.00,
+        "payment_method": "Bank Transfer",
+        "date": datetime.utcnow(),
+        "transaction_id": "GHI79",
+        "status": "failed",
+        "is_anonymous": False
+    },
+    {
+        "donor_user_id": 4,
+        "organization_id": 4,
+        "amount": 75.00,
+        "payment_method": "Credit Card",
+        "date": datetime.utcnow(),
+        "transaction_id": "JK012",
+        "status": "success",
+        "is_anonymous": False
+    },
+    {
+        "donor_user_id": 5,
+        "organization_id": 5,
+        "amount": 150.00,
+        "payment_method": "PayPal",
+        "date": datetime.utcnow(),
+        "transaction_id": "MN345",
+        "status": "success",
+        "is_anonymous": True
+    },
+    {
+        "donor_user_id": 6,
+        "organization_id": 1,
+        "amount": 75.00,
+        "payment_method": "Credit Card",
+        "date": datetime.utcnow(),
+        "transaction_id": "PQR68",
+        "status": "success",
+        "is_anonymous": False
+    },
+    {
+        "donor_user_id": 7,
+        "organization_id": 2,
+        "amount": 100.00,
+        "payment_method": "PayPal",
+        "date": datetime.utcnow(),
+        "transaction_id": "STU01",
+        "status": "success",
+        "is_anonymous": True
+    },
+    {
+        "donor_user_id": 8,
+        "organization_id": 5,
+        "amount": 50.00,
+        "payment_method": "Bank Transfer",
+        "date": datetime.utcnow(),
+        "transaction_id": "VWX34",
+        "status": "pending",
+        "is_anonymous": False
+    },
+    {
+        "donor_user_id": 9,
+        "organization_id": 6,
+        "amount": 200.00,
+        "payment_method": "Credit Card",
+        "date": datetime.utcnow(),
+        "transaction_id": "YZ567",
+        "status": "failed",
+        "is_anonymous": False
+    },
+    {
+        "donor_user_id": 10,
+        "organization_id": 7,
+        "amount": 150.00,
+        "payment_method": "PayPal",
+        "date": datetime.utcnow(),
+        "transaction_id": "BC890",
+        "status": "success",
+        "is_anonymous": True
+    },
+    {
+        "donor_user_id": 11,
+        "organization_id": 8,
+        "amount": 80.00,
+        "payment_method": "Credit Card",
+        "date": datetime.utcnow(),
+        "transaction_id": "EFG",
+        "status": "success",
+        "is_anonymous": False
+    }
+
+]
+    # Add more payment data as needed
+
+    
+    for data in payments_data:
+        payment = Payment(**data)
+        db.session.add(payment)
+
+    db.session.commit()
+
+print("💰 Payments seeded successfully!")
+   
