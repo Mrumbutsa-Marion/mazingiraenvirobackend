@@ -261,60 +261,154 @@ def seed_donations():
 with app.app_context():
     seed_donations()
 
-kenyan_names = [
-    "Wanjiru Muthoni", "Kamau Njoroge", "Mwangi Kimani", "Njeri Wangari",
-    "Wambui Waweru", "Gachoka Muturi", "Nyawira Maina", "Makena Njeru",
-    "Onyango Otieno", "Atieno Akoth", "Akinyi Omondi", "Adhiambo Omollo",
-    "Otieno Owuor", "Ochieng Okoth", "Kipchoge Keino", "Chebet Kosgei",
-    "Kiplagat Bett", "Tanui Cheruiyot", "Cheruiyot Barasa", "Maritim Kigen"
-]
+# kenyan_names = [
+#     "Wanjiru Muthoni", "Kamau Njoroge", "Mwangi Kimani", "Njeri Wangari",
+#     "Wambui Waweru", "Gachoka Muturi", "Nyawira Maina", "Makena Njeru",
+#     "Onyango Otieno", "Atieno Akoth", "Akinyi Omondi", "Adhiambo Omollo",
+#     "Otieno Owuor", "Ochieng Okoth", "Kipchoge Keino", "Chebet Kosgei",
+#     "Kiplagat Bett", "Tanui Cheruiyot", "Cheruiyot Barasa", "Maritim Kigen"
+# ]
 
-descriptions = [
-    "A local farmer who contributes to community agriculture programs.",
-    "A talented artist who teaches painting to children in the community.",
-    "A single mother of three who actively participates in local self-help groups.",
-    "A dedicated teacher who has been providing free education to underprivileged children.",
-    "A community health worker who has been instrumental in local vaccination drives.",
-    "An entrepreneur who has started a small business with the help of community loans.",
-    "A young athlete training for national competitions with hopes of representing Kenya.",
-    "A skilled carpenter providing affordable furniture to local schools and hospitals."
-]
+# descriptions = [
+#     "A local farmer who contributes to community agriculture programs.",
+#     "A talented artist who teaches painting to children in the community.",
+#     "A single mother of three who actively participates in local self-help groups.",
+#     "A dedicated teacher who has been providing free education to underprivileged children.",
+#     "A community health worker who has been instrumental in local vaccination drives.",
+#     "An entrepreneur who has started a small business with the help of community loans.",
+#     "A young athlete training for national competitions with hopes of representing Kenya.",
+#     "A skilled carpenter providing affordable furniture to local schools and hospitals."
+# ]
 
-inventory_received_examples = [
-    "5 bags of maize, 10 kgs of beans, 2 blankets",
-    "Art supplies including paints, brushes, and canvases",
-    "Monthly food ration, school supplies for the children",
-    "Books, desks, and learning materials for the classroom",
-    "Medical kits, gloves, and face masks for health campaigns",
-    "Seed capital fund, business training manuals",
-    "Sports gear, running shoes, and athletic clothing",
-    "Woodworking tools, safety equipment, and varnish"
-]
+# inventory_received_examples = [
+#     "5 bags of maize, 10 kgs of beans, 2 blankets",
+#     "Art supplies including paints, brushes, and canvases",
+#     "Monthly food ration, school supplies for the children",
+#     "Books, desks, and learning materials for the classroom",
+#     "Medical kits, gloves, and face masks for health campaigns",
+#     "Seed capital fund, business training manuals",
+#     "Sports gear, running shoes, and athletic clothing",
+#     "Woodworking tools, safety equipment, and varnish"
+# ]
 
-def clear_beneficiaries():
+# def clear_beneficiaries():
+#     try:
+#         num_rows_deleted = db.session.query(Beneficiary).delete()
+#         db.session.commit()
+#         print(f"Cleared {num_rows_deleted} rows from Beneficiary table.")
+#     except Exception as e:
+#         print(f"Error clearing Beneficiary table: {e}")
+#         db.session.rollback()
+
+# def seed_beneficiaries(num):
+#     for _ in range(num):
+#         name = random.choice(kenyan_names)
+#         description = random.choice(descriptions)
+#         inventory_received = random.choice(inventory_received_examples)
+#         new_beneficiary = Beneficiary(name=name, description=description, inventory_received=inventory_received)
+#         db.session.add(new_beneficiary)
+#     db.session.commit()    
+
+# app = create_app()
+# with app.app_context():
+#     db.init_app(app)
+#     db.create_all()
+#     clear_beneficiaries()
+#     seed_beneficiaries(50)
+def seed_beneficiaries():
+    print("👥 Seeding beneficiaries...")
+
+
     try:
         num_rows_deleted = db.session.query(Beneficiary).delete()
         db.session.commit()
         print(f"Cleared {num_rows_deleted} rows from Beneficiary table.")
     except Exception as e:
-        print(f"Error clearing Beneficiary table: {e}")
+        print("An error occurred while clearing the Beneficiary table:", e)
+        db.session.rollback()
+        return 
+
+    beneficiaries_data = [
+     {
+        "organization_id": 1,  
+        "name": "Green Horizons",
+        "description": "Advocates for reforestation in deforested regions of Kenya.",
+        "inventory_received": "Seedlings, Gardening Tools, Watering Cans",
+     },
+     {
+        "organization_id": 2,
+        "name": "Clean Oceans Kenya",
+        "description": "Focused on cleaning up Kenya's coastline and promoting recycling of ocean waste.",
+        "inventory_received": "Recycling Bins, Trash Bags, Protective Gloves",
+     },
+     {
+        "organization_id": 3,
+        "name": "Savannah Protectors",
+        "description": "Works to prevent illegal poaching and protect wildlife habitats.",
+        "inventory_received": "Binoculars, GPS Devices, Ranger Gear",
+     },
+     {
+        "organization_id": 4,
+        "name": "Kenya Climate Champions",
+        "description": "Educates communities on climate change impacts and sustainable living.",
+        "inventory_received": "Educational Materials, Solar Lamps, Tree Seedlings",
+     },
+     {
+        "organization_id": 5,
+        "name": "Eco Warriors Trust",
+        "description": "Empowers youth to participate in environmental conservation projects.",
+        "inventory_received": "Workbooks, Educational Kits, Reusable Water Bottles",
+     },
+     {
+        "organization_id": 6,
+        "name": "Urban Green Spaces",
+        "description": "Creates and maintains green spaces in urban areas of Kenya.",
+        "inventory_received": "Gardening Equipment, Seeds, Soil Fertilizers",
+     },
+     {
+        "organization_id": 7,
+        "name": "Renewable Energy for Kenya",
+        "description": "Promotes the use of renewable energy sources within local communities.",
+        "inventory_received": "Solar Panels, Wind Turbines, Installation Kits",
+     },
+     {
+        "organization_id": 8,
+        "name": "Water Conservation Coalition",
+        "description": "Aims to preserve Kenya's freshwater resources through conservation efforts.",
+        "inventory_received": "Water Tanks, Irrigation Systems, Water Filters",
+     },
+     {
+        "organization_id": 9,
+        "name": "Waste Not Kenya",
+        "description": "Advocates for zero waste lifestyles and provides composting solutions.",
+        "inventory_received": "Compost Bins, Educational Pamphlets, Reusable Bags",
+     },
+     {
+        "organization_id": 10,
+        "name": "Forest Guardians",
+        "description": "Engages in the protection and expansion of Kenya's forest cover.",
+        "inventory_received": "Tree Seedlings, Reforestation Guides, Ecological Monitoring Tools",
+     }
+  ]
+
+    for data in beneficiaries_data:
+        beneficiary = Beneficiary(
+            organization_id=data["organization_id"],
+            name=data["name"],
+            description=data["description"],
+            inventory_received=data["inventory_received"]
+        )
+        db.session.add(beneficiary)
+
+    try:
+        db.session.commit()
+    except Exception as e:
+        print("An error occurred while seeding the Beneficiary table:", e)
         db.session.rollback()
 
-def seed_beneficiaries(num):
-    for _ in range(num):
-        name = random.choice(kenyan_names)
-        description = random.choice(descriptions)
-        inventory_received = random.choice(inventory_received_examples)
-        new_beneficiary = Beneficiary(name=name, description=description, inventory_received=inventory_received)
-        db.session.add(new_beneficiary)
-    db.session.commit()    
-
-app = create_app()
-with app.app_context():
-    db.init_app(app)
-    db.create_all()
-    clear_beneficiaries()
-    seed_beneficiaries(50)
+with app.app_context(): 
+    db.create_all()   
+    seed_beneficiaries()       
 
 
 def seed_inventory():
