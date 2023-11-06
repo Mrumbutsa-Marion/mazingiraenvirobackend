@@ -218,4 +218,10 @@ with app.app_context():
     db.session.commit()
 
 print("💰 Payments seeded successfully!")
-   
+   #AZGK2BbFG3XSD08pGKz9TDSEVvHqRKCDIblLhidzS4frVz8TZPFGj2Is9sBW5PqOpl_TUyyQ9fw9mDwO
+   #Sandbox URL:https://sandbox.paypal.com
+   #Sandbox Region:GB
+   #Email:sb-47r9cb26609737@business.example.com
+   #password:+b3+zDT[
+
+#
