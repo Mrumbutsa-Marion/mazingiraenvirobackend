@@ -179,6 +179,22 @@ def get_organization(organization_id):
     }
 
     return jsonify(organization_data)
+
+@app.route('/organizations/<int:org_id>', methods=['DELETE'])
+def delete_organization(org_id):
+    organization = Organization.query.get(org_id)
+    if organization is None:
+        return jsonify({'error': 'Organization not found'}), 404
+
+    try:
+        db.session.delete(organization)
+        db.session.commit()
+        return jsonify({'message': 'Organization deleted successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Unable to delete organization', 'details': str(e)}), 500
+
+
 #-------------------routes for organisattion application-------------------
 @app.route('/apply', methods=['POST'])
 def apply():
@@ -227,6 +243,7 @@ def reject_application(org_id):
    
 
 #----------------------------------------------------------------------------------------
+
         #donations
 
 @app.route('/donations', methods=['GET']) #admin and organization
@@ -313,8 +330,8 @@ def get_beneficiaries():
     } for beneficiary in beneficiaries]
 
     return jsonify(beneficiaries_list), 200
-#admin and organization
-@app.route('/beneficiaries/<int:beneficiary_id>', methods=['GET']) 
+
+@app.route('/beneficiaries/<int:beneficiary_id>', methods=['GET']) #admin and organization
 def get_beneficiary(beneficiary_id):
     beneficiary = Beneficiary.query.get_or_404(beneficiary_id)
     beneficiary_data = {
