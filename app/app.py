@@ -9,6 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import secrets
 from flask_swagger_ui import get_swaggerui_blueprint
+from paypal_routes import paypal_bp
 
 def create_app():
 
@@ -131,7 +132,24 @@ def get_organization(organization_id):
     }
 
     return jsonify(organization_data)
+@app.route('/stories', methods=['GET'])
+def get_stories():
+    stories = Story.query.all()
+    serialized_stories = []
+    for story in stories:
+        serialized_story = {
+            'organization_id': story.organization_id,
+            'title': story.title,
+            'content': story.content,
+            'images': story.images,
+            'date_created': story.date_created.isoformat()
+        }
+        serialized_stories.append(serialized_story)
+    return jsonify(serialized_stories)
 
+
+
+app.register_blueprint(paypal_bp, url_prefix='/paypal')
 
 if __name__ == '__main__':
     app.run(port=5003, debug=True)
