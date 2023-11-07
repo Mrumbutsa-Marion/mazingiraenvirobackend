@@ -8,6 +8,7 @@ from wtforms.validators import DataRequired, Email
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import secrets
+from flask_login import current_user
 from flask_admin import AdminIndexView, Admin, expose
 from flask import redirect, url_for
 from flask_admin.contrib.sqla import ModelView
@@ -52,7 +53,39 @@ def create_app():
     name="Dashboard", menu_icon_type="fa", menu_icon_value="fa-dashboard"
     ))
 
+    class OrganizationAdminView(ModelView):
+        column_list = ('name', 'description', 'contact_information', 'status', 'isAdminApproved')
+        form_columns = ('name', 'description', 'contact_information', 'status', 'isAdminApproved')
+        column_searchable_list = ('name', 'description')
 
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.is_admin()
+
+    class ReviewAdminView(ModelView):
+        column_list = ('id', 'name', 'description', 'contact_information', 'image_url', 'status')
+        can_edit = False
+        can_create = False
+        column_filters = ['status', 'isAdminApproved']
+
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.is_admin()
+
+    class ApprovalAdminView(ModelView):
+       def on_model_change(self, form, model, is_created):
+        if is_created:
+            model.status = 'Approved'
+            model.isAdminApproved = True
+
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.is_admin()
+
+    class RejectionAdminView(ModelView):
+       def on_model_change(self, form, model, is_created):
+        if is_created:
+            model.status = 'Rejected'
+
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.is_admin()
 
 
     # Add Flask-Admin views for the models
@@ -61,11 +94,16 @@ def create_app():
     admin.add_view(ModelView(Story, db.session))
     admin.add_view(ModelView(Donation, db.session, menu_icon_type="fa", menu_icon_value="fa-solid fa-circle-dollar-to-slot"))
     admin.add_view(ModelView(Beneficiary, db.session, menu_icon_type="fa", menu_icon_value="fa-solid fa-hands-holding-child"))
-
     admin.add_view(ModelView(Organization, db.session, menu_icon_type="fa", menu_icon_value="fa-solid fa-database"))
+    admin.add_view(ReviewAdminView(Organization, db.session, name='Applications', endpoint='review_applications', category="Applications"))
+    admin.add_view(ApprovalAdminView(Organization, db.session, name='Approve', endpoint='approve_application', category="Applications"))
+    admin.add_view(RejectionAdminView(Organization, db.session, name='Reject', endpoint='reject_application', category="Applications"))
     admin.add_view(ModelView(Inventory, db.session, menu_icon_type="fa", menu_icon_value="fa-solid fa-tree"))
     admin.add_view(ModelView(Reminder, db.session))
+  
 
+
+   
 
 
     return app
