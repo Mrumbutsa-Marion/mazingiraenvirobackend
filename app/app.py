@@ -14,6 +14,8 @@ from flask import redirect, url_for
 from flask_admin.contrib.sqla import ModelView
 from flask_swagger_ui import get_swaggerui_blueprint
 from datetime import datetime
+from paypal_routes import paypal_bp
+
 
 def create_app():
 
@@ -515,6 +517,25 @@ def delete_inventory(inventory_id):
     db.session.delete(inventory_item)
     db.session.commit()
     return jsonify({'message': 'Inventory deleted'}), 200
+
+@app.route('/stories', methods=['GET'])
+def get_stories():
+    stories = Story.query.all()
+    serialized_stories = []
+    for story in stories:
+        serialized_story = {
+            'organization_id': story.organization_id,
+            'title': story.title,
+            'content': story.content,
+            'images': story.images,
+            'date_created': story.date_created.isoformat()
+        }
+        serialized_stories.append(serialized_story)
+    return jsonify(serialized_stories)
+
+
+
+app.register_blueprint(paypal_bp, url_prefix='/paypal')
 
 if __name__ == '__main__':
     app.run(port=5001, debug=True)
