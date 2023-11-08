@@ -1,19 +1,22 @@
 from datetime import datetime
-from random import choice
+from random import choice,random
 from app import create_app
-from models import db, Organization
+from datetime import timedelta
+from models import db, Organization ,User,Inventory,Beneficiary,Donation,Payment,Story,Reminder
+from datetime import datetime, timedelta
+import random
+import string
 
-# Create the Flask app
+
+      # Create the Flask app
 app = create_app()
-
-# Use the app context to interact with the database
 with app.app_context():
-    # Step 1: Check if tables exist, if not, create them
+    #Check if tables exist, if not, create them
     db.create_all()
 
     db.session.commit()
 
-    # Step 3: Seeding organizations
+    # Seeding organizations
     print("🏢 Seeding organizations...")
     organizations_data = [
           {
@@ -108,4 +111,485 @@ with app.app_context():
 
     db.session.commit()
 
-    print("🏢 Done seeding!")
+   
+ 
+    users_data = [
+
+    {"user_name": "KinyuaA", "email": "alice.kinyua@fakemail.com", "password": "kinyuaSecure1!"},
+    {"user_name": "OtienoZ", "email": "zachary.otieno@fakemail.com", "password": "otienoZee123!"},
+    {"user_name": "KipronoE", "email": "esther.kiprono@fakemail.com", "password": "kipronoPass789!"},
+    {"user_name": "OdhiamboR", "email": "ruth.odhiambo@fakemail.com", "password": "odhiamboRuth!456"},
+    {"user_name": "MainaS", "email": "simon.maina@fakemail.com", "password": "mainaS3cur3!"},
+    {"user_name": "OchiengD", "email": "diana.ochieng@fakemail.com", "password": "ochiengPass!321"},
+    {"user_name": "KimathiJ", "email": "julius.kimathi@fakemail.com", "password": "kimathiJ254!!"},
+    {"user_name": "WambuiG", "email": "grace.wambui@fakemail.com", "password": "wambuiG!Password"},
+    {"user_name": "MbogoL", "email": "lucas.mbogo@fakemail.com", "password": "lucasMbogo123!"},
+    {"user_name": "OkothP", "email": "paul.okoth@fakemail.com", "password": "okothPaul!987"}
+
+
+
+]
+
+    for data in users_data:
+         existing_user = User.query.filter((User.user_name == data['user_name']) | (User.email == data['email'])).first()
+         if not existing_user:
+           user = User(**data)
+           db.session.add(user)
+
+    db.session.commit()
+
+def seed_donations():
+    donations_data = [
+    {
+        "donor_user_id": 1,
+        "organization_id": 1,
+        "amount": 2500.00,
+        "donation_type": "One-time",
+        "anonymous": False,
+        "date": "2023-10-01",
+        "transaction_id": "TXN12345"
+    },
+    {
+        "donor_user_id": 2,
+        "organization_id": 2,
+        "amount": 1500.00,
+        "donation_type": "Monthly",
+        "anonymous": True,
+        "date": "2023-10-02",
+        "transaction_id": "TXN12346"
+    },
+    {
+        "donor_user_id": 3,
+        "organization_id": 3,
+        "amount": 3000.00,
+        "donation_type": "Annual",
+        "anonymous": False,
+        "date": "2023-10-03",
+        "transaction_id": "TXN12347"
+    },
+    {
+        "donor_user_id": 4,
+        "organization_id": 4,
+        "amount": 5000.00,
+        "donation_type": "One-time",
+        "anonymous": True,
+        "date": "2023-10-04",
+        "transaction_id": "TXN12348"
+    },
+    {
+        "donor_user_id": 5,
+        "organization_id": 5,
+        "amount": 7000.00,
+        "donation_type": "Monthly",
+        "anonymous": False,
+        "date": "2023-10-05",
+        "transaction_id": "TXN12349"
+    },
+
+    {
+        "donor_user_id": 6,
+        "organization_id": 6,
+        "amount": 7050.00,
+        "donation_type": "Monthly",
+        "anonymous": False,
+        "date": "2023-10-06",
+        "transaction_id": "TXN12350"
+    },
+    {
+        "donor_user_id": 7,
+        "organization_id": 7,
+        "amount": 7600.00,
+        "donation_type": "Monthly",
+        "anonymous": False,
+        "date": "2023-10-05",
+        "transaction_id": "TXN12351"
+    },
+    {
+        "donor_user_id": 8,
+        "organization_id": 8,
+        "amount": 850.00,
+        "donation_type": "Monthly",
+        "anonymous": False,
+        "date": "2023-10-05",
+        "transaction_id": "TXN12352"
+    },
+    {
+        "donor_user_id": 9,
+        "organization_id": 9,
+        "amount": 7590.00,
+        "donation_type": "Monthly",
+        "anonymous": False,
+        "date": "2023-10-05",
+        "transaction_id": "TXN12353"
+    },
+    {
+        "donor_user_id": 10,
+        "organization_id":10,
+        "amount": 750.00,
+        "donation_type": "Monthly",
+        "anonymous": False,
+        "date": "2023-10-05",
+        "transaction_id": "TXN12354"
+    },
+]
+
+def seed_donations():
+    print("💰 Seeding donations...")
+
+    user_ids = [user.id for user in User.query.all()]
+    organization_ids = [organization.id for organization in Organization.query.all()]
+
+    donations_data = [
+        {
+            "donor_user_id": choice(user_ids),
+            "organization_id": choice(organization_ids),
+            "amount": random.uniform(50.0, 5000.0),  
+            "donation_type": choice(["One-time", "Monthly", "Annual"]),
+            "anonymous": choice([True, False]),
+            "date": datetime.utcnow() - timedelta(days=random.randint(0, 365)),
+            "transaction_id": f"TXN{random.randint(100000, 999999)}"
+        } for _ in range(20)  
+    ]
+
+    for data in donations_data:
+        donation = Donation(**data)
+        db.session.add(donation)
+
+    db.session.commit()
+
+
+with app.app_context():
+    seed_donations()
+
+
+def seed_beneficiaries():
+    print("👥 Seeding beneficiaries...")
+
+
+    try:
+        num_rows_deleted = db.session.query(Beneficiary).delete()
+        db.session.commit()
+        print(f"Cleared {num_rows_deleted} rows from Beneficiary table.")
+    except Exception as e:
+        print("An error occurred while clearing the Beneficiary table:", e)
+        db.session.rollback()
+        return 
+
+    beneficiaries_data = [
+     {
+        "organization_id": 1,  
+        "name": "Green Horizons",
+        "description": "Advocates for reforestation in deforested regions of Kenya.",
+        "inventory_received": "Seedlings, Gardening Tools, Watering Cans",
+     },
+     {
+        "organization_id": 2,
+        "name": "Clean Oceans Kenya",
+        "description": "Focused on cleaning up Kenya's coastline and promoting recycling of ocean waste.",
+        "inventory_received": "Recycling Bins, Trash Bags, Protective Gloves",
+     },
+     {
+        "organization_id": 3,
+        "name": "Savannah Protectors",
+        "description": "Works to prevent illegal poaching and protect wildlife habitats.",
+        "inventory_received": "Binoculars, GPS Devices, Ranger Gear",
+     },
+     {
+        "organization_id": 4,
+        "name": "Kenya Climate Champions",
+        "description": "Educates communities on climate change impacts and sustainable living.",
+        "inventory_received": "Educational Materials, Solar Lamps, Tree Seedlings",
+     },
+     {
+        "organization_id": 5,
+        "name": "Eco Warriors Trust",
+        "description": "Empowers youth to participate in environmental conservation projects.",
+        "inventory_received": "Workbooks, Educational Kits, Reusable Water Bottles",
+     },
+     {
+        "organization_id": 6,
+        "name": "Urban Green Spaces",
+        "description": "Creates and maintains green spaces in urban areas of Kenya.",
+        "inventory_received": "Gardening Equipment, Seeds, Soil Fertilizers",
+     },
+     {
+        "organization_id": 7,
+        "name": "Renewable Energy for Kenya",
+        "description": "Promotes the use of renewable energy sources within local communities.",
+        "inventory_received": "Solar Panels, Wind Turbines, Installation Kits",
+     },
+     {
+        "organization_id": 8,
+        "name": "Water Conservation Coalition",
+        "description": "Aims to preserve Kenya's freshwater resources through conservation efforts.",
+        "inventory_received": "Water Tanks, Irrigation Systems, Water Filters",
+     },
+     {
+        "organization_id": 9,
+        "name": "Waste Not Kenya",
+        "description": "Advocates for zero waste lifestyles and provides composting solutions.",
+        "inventory_received": "Compost Bins, Educational Pamphlets, Reusable Bags",
+     },
+     {
+        "organization_id": 10,
+        "name": "Forest Guardians",
+        "description": "Engages in the protection and expansion of Kenya's forest cover.",
+        "inventory_received": "Tree Seedlings, Reforestation Guides, Ecological Monitoring Tools",
+     }
+  ]
+
+    for data in beneficiaries_data:
+        beneficiary = Beneficiary(
+            organization_id=data["organization_id"],
+            name=data["name"],
+            description=data["description"],
+            inventory_received=data["inventory_received"]
+        )
+        db.session.add(beneficiary)
+
+    try:
+        db.session.commit()
+    except Exception as e:
+        print("An error occurred while seeding the Beneficiary table:", e)
+        db.session.rollback()
+
+with app.app_context(): 
+    db.create_all()   
+    seed_beneficiaries()       
+
+
+def seed_inventory():
+    environmental_inventory = [
+        Inventory(beneficiary_id=1, description='Tree saplings for reforestation', quantity=100, date_received=datetime.utcnow()),
+        Inventory(beneficiary_id=1, description='Gardening tools for community garden', quantity=10, date_received=datetime.utcnow()),
+        Inventory(beneficiary_id=2, description='Recycling bins for plastic waste', quantity=50, date_received=datetime.utcnow()),
+        Inventory(beneficiary_id=2, description='Composting kits for organic waste', quantity=30, date_received=datetime.utcnow()),
+        Inventory(beneficiary_id=3, description='Water testing kits for river clean-up', quantity=15, date_received=datetime.utcnow()),
+        Inventory(beneficiary_id=3, description='Reusable bags for litter collection', quantity=200, date_received=datetime.utcnow()),
+        Inventory(beneficiary_id=4, description='Biodegradable planting pots', quantity=500, date_received=datetime.utcnow()),
+        Inventory(beneficiary_id=4, description='Solar-powered outdoor lights', quantity=25, date_received=datetime.utcnow()),
+        Inventory(beneficiary_id=5, description='Educational materials on recycling', quantity=1000, date_received=datetime.utcnow()),
+        Inventory(beneficiary_id=5, description='Wildlife tracking collars for research', quantity=5, date_received=datetime.utcnow()),
+    ]
+    with app.app_context():
+     db.session.bulk_save_objects(environmental_inventory)
+
+     try:
+        db.session.commit()
+        print('Environmental inventory seeded successfully.')
+     except Exception as e:
+        db.session.rollback()
+        print('An error occurred while seeding environmental inventory:', str(e))
+seed_inventory()
+
+
+print("🏢 Done seeding!")
+with app.app_context():
+    print("📖 Seeding stories...")
+    stories_data = [
+        {
+            "organization_id": 1,
+            "title": "Helping Underprivileged Children",
+            "content": "We organized a charity event to provide education and support to underprivileged children in our community. Thanks to the generous donations from our supporters, we were able to make a positive impact on their lives.",
+            "images": "https://example.com/images/story1.jpg",
+            "date_created": datetime.utcnow()
+        },
+        {
+            "organization_id": 2,
+            "title": "Supporting Local Farmers",
+            "content": "We partnered with local farmers to promote sustainable agriculture and fair trade. By purchasing their produce directly, we ensured that they received fair compensation for their hard work while providing our community with fresh, organic food.",
+            "images": "https://example.com/images/story2.jpg",
+            "date_created": datetime.utcnow()
+        },
+        {
+            "organization_id": 3,
+            "title": "Empowering Women in Tech",
+            "content": "We launched a scholarship program to empower women interested in pursuing careers in technology. Through mentorship and financial support, we aim to bridge the gender gap in the tech industry and create more opportunities for talented women.",
+            "images": "https://example.com/images/story3.jpg",
+            "date_created": datetime.utcnow()
+        },
+        {
+            "organization_id": 4,
+            "title": "Providing Clean Water",
+            "content": "We installed water purification systems in rural areas to provide clean drinking water to communities in need. Access to clean water is a basic human right, and we are committed to ensuring that everyone has access to this essential resource.",
+            "images": "https://example.com/images/story4.jpg",
+            "date_created": datetime.utcnow()
+        },
+        {
+            "organization_id": 5,
+            "title": "Promoting Renewable Energy",
+            "content": "We initiated a solar power project to promote renewable energy and reduce carbon emissions. By harnessing the power of the sun, we are working towards a greener and more sustainable future for our planet.",
+            "images": "https://example.com/images/story5.jpg",
+            "date_created": datetime.utcnow()
+        },
+        {
+            "organization_id": 6,
+            "title": "Rebuilding Communities After Natural Disasters",
+            "content": "In the aftermath of a devastating hurricane, we mobilized our resources to rebuild homes and infrastructure in affected communities. Through the collective efforts of volunteers and donors, we provided hope and support to those who were impacted by the disaster.",
+            "images": "https://example.com/images/story6.jpg",
+            "date_created": datetime.utcnow()
+        },
+        {
+            "organization_id": 7,
+            "title": "Empowering Youth Through Education",
+            "content": "We established after-school programs and scholarship opportunities to empower underprivileged youth through education. By providing access to quality education and mentorship, we believe in creating a brighter future for the next generation.",
+            "images": "https://example.com/images/story7.jpg",
+            "date_created": datetime.utcnow()
+        },
+        {
+            "organization_id": 8,
+            "title": "Preserving Wildlife and Biodiversity",
+            "content": "We worked tirelessly to protect endangered species and preserve biodiversity in fragile ecosystems. Through conservation efforts and community engagement, we strive to maintain the delicate balance of our planet's diverse flora and fauna.",
+            "images": "https://example.com/images/story8.jpg",
+            "date_created": datetime.utcnow()
+        },
+        {
+            "organization_id": 9,
+            "title": "Promoting Mental Health and Well-being",
+            "content": "We organized workshops and awareness campaigns to promote mental health and well-being in our community. By breaking the stigma surrounding mental health, we aim to create a supportive environment where individuals can seek help and find solace.",
+            "images": "https://example.com/images/story9.jpg",
+            "date_created": datetime.utcnow()
+        },
+        {
+            "organization_id": 10,
+            "title": "Fighting Hunger and Food Insecurity",
+            "content": "Through our food banks and community kitchens, we provided nutritious meals to those facing hunger and food insecurity. Our goal is to ensure that no one goes to bed hungry and that everyone has access to sufficient and healthy food.",
+            "images": "https://example.com/images/story10.jpg",
+            "date_created": datetime.utcnow()
+        }
+    ]
+
+    for data in stories_data:
+        
+        story = Story(**data)
+        db.session.add(story)
+
+        db.session.commit()
+
+print("📖 Stories seeded successfully!")
+
+# Create the Flask app
+app = create_app()
+with app.app_context():
+    print("📖 Seeding payments...")
+    payments_data = [
+    {
+        "donor_user_id": 1,
+        "organization_id": 1,
+        "amount": 100.00,
+        "payment_method": "Credit Card",
+        "date": datetime.utcnow(),
+        "transaction_id": "ABC123",
+        "status": "success",
+        "is_anonymous": False
+    },
+    {
+        "donor_user_id": 2,
+        "organization_id": 2,
+        "amount": 50.00,
+        "payment_method": "PayPal",
+        "date": datetime.utcnow(),
+        "transaction_id": "456",
+        "status": "pending",
+        "is_anonymous": True
+    },
+    {
+        "donor_user_id": 3,
+        "organization_id": 3,
+        "amount": 200.00,
+        "payment_method": "Bank Transfer",
+        "date": datetime.utcnow(),
+        "transaction_id": "GHI79",
+        "status": "failed",
+        "is_anonymous": False
+    },
+    {
+        "donor_user_id": 4,
+        "organization_id": 4,
+        "amount": 75.00,
+        "payment_method": "Credit Card",
+        "date": datetime.utcnow(),
+        "transaction_id": "JK012",
+        "status": "success",
+        "is_anonymous": False
+    },
+    {
+        "donor_user_id": 5,
+        "organization_id": 5,
+        "amount": 150.00,
+        "payment_method": "PayPal",
+        "date": datetime.utcnow(),
+        "transaction_id": "MN345",
+        "status": "success",
+        "is_anonymous": True
+    },
+    {
+        "donor_user_id": 6,
+        "organization_id": 1,
+        "amount": 75.00,
+        "payment_method": "Credit Card",
+        "date": datetime.utcnow(),
+        "transaction_id": "PQR68",
+        "status": "success",
+        "is_anonymous": False
+    },
+    {
+        "donor_user_id": 7,
+        "organization_id": 2,
+        "amount": 100.00,
+        "payment_method": "PayPal",
+        "date": datetime.utcnow(),
+        "transaction_id": "STU01",
+        "status": "success",
+        "is_anonymous": True
+    },
+    {
+        "donor_user_id": 8,
+        "organization_id": 5,
+        "amount": 50.00,
+        "payment_method": "Bank Transfer",
+        "date": datetime.utcnow(),
+        "transaction_id": "VWX34",
+        "status": "pending",
+        "is_anonymous": False
+    },
+    {
+        "donor_user_id": 9,
+        "organization_id": 6,
+        "amount": 200.00,
+        "payment_method": "Credit Card",
+        "date": datetime.utcnow(),
+        "transaction_id": "YZ567",
+        "status": "failed",
+        "is_anonymous": False
+    },
+    {
+        "donor_user_id": 10,
+        "organization_id": 7,
+        "amount": 150.00,
+        "payment_method": "PayPal",
+        "date": datetime.utcnow(),
+        "transaction_id": "BC890",
+        "status": "success",
+        "is_anonymous": True
+    },
+    {
+        "donor_user_id": 11,
+        "organization_id": 8,
+        "amount": 80.00,
+        "payment_method": "Credit Card",
+        "date": datetime.utcnow(),
+        "transaction_id": "EFG",
+        "status": "success",
+        "is_anonymous": False
+    }
+
+]
+    # Add more payment data as needed
+
+    
+    for data in payments_data:
+        payment = Payment(**data)
+        db.session.add(payment)
+
+    db.session.commit()
