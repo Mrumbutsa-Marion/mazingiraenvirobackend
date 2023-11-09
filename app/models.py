@@ -3,6 +3,7 @@ from sqlalchemy.orm import validates
 from sqlalchemy import DateTime, ForeignKey
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
+from flask import Blueprint
 
 db = SQLAlchemy()
 
@@ -115,18 +116,7 @@ class Reminder(db.Model):
         return f"<Reminder(user_id={self.user_id}, organization_id={self.organization_id})>"
     
 
-# class Payment(db.Model):
-#     __tablename__ = 'payment'
-#     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-#     donor_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-#     organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'))
-#     amount = db.Column(db.Numeric(10, 2), nullable=False)
-#     payment_method = db.Column(db.String(50), nullable=False)
-#     date = db.Column(db.Date, nullable=False)
-#     transaction_id = db.Column(db.String(120), unique=True, nullable=True)
 
-#     def __repr__(self):
-#         return f"<Payment(amount={self.amount})>"
 class Payment(db.Model):
     __tablename__ = 'payment'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -141,7 +131,6 @@ class Payment(db.Model):
 
     def __repr__(self):
         return f"<Payment(amount={self.amount}, status='{self.status}', is_anonymous={self.is_anonymous})>"
-
 
 
 
