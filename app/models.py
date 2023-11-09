@@ -3,6 +3,7 @@ from sqlalchemy.orm import validates
 from sqlalchemy import DateTime, ForeignKey
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
+from flask import Blueprint
 
 db = SQLAlchemy()
 
@@ -131,7 +132,6 @@ class Payment(db.Model):
 
     def __repr__(self):
         return f"<Payment(amount={self.amount}, status='{self.status}', is_anonymous={self.is_anonymous})>"
-
 
 
 
