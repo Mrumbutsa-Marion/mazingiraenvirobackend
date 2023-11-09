@@ -1,14 +1,13 @@
-from flask import Flask, request, jsonify,Blueprint, abort
+from flask import Flask, request, jsonify, Blueprint, abort
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_migrate import Migrate
-from .models import db, User, Role, Story, Donation, Beneficiary, Organization, Inventory, Reminder,Payment
+from .models import db, User, Role, Story, Donation, Beneficiary, Organization, Inventory, Reminder, Payment
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, Email
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import secrets
-from flask_login import current_user
 from flask_admin import AdminIndexView, Admin, expose
 from flask import redirect, url_for
 from flask_admin.contrib.sqla import ModelView
@@ -16,9 +15,7 @@ from flask_swagger_ui import get_swaggerui_blueprint
 from datetime import datetime
 
 def create_app():
-
     app = Flask(__name__)
-    
 
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///environment.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
@@ -29,7 +26,7 @@ def create_app():
         API_URL,
         config={
             'app_name': "Mazingira Application"
-    }
+        }
     )
     app.register_blueprint(SWAGGERUI_BLUEPRINT, url_prefix=SWAGGER_URL)
 
@@ -41,16 +38,15 @@ def create_app():
 
     secret_key = secrets.token_hex(16)
     app.config['SECRET_KEY'] = secret_key
+    
 
     class MyAdminIndexView(AdminIndexView):
         @expose("/")
         def index(self):
-         return super(MyAdminIndexView,self).index()
-        
-        
+            return super(MyAdminIndexView, self).index()
 
     admin = Admin(app, name='Mazingira', template_mode='bootstrap4', index_view=MyAdminIndexView(
-    name="Dashboard", menu_icon_type="fa", menu_icon_value="fa-dashboard"
+        name="Dashboard", menu_icon_type="fa", menu_icon_value="fa-dashboard"
     ))
 
     class OrganizationAdminView(ModelView):
@@ -58,8 +54,6 @@ def create_app():
         form_columns = ('name', 'description', 'contact_information', 'status', 'isAdminApproved')
         column_searchable_list = ('name', 'description')
 
-    def is_accessible(self):
-        return current_user.is_authenticated and current_user.is_admin()
 
     class ReviewAdminView(ModelView):
         column_list = ('id', 'name', 'description', 'contact_information', 'image_url', 'status')
@@ -67,25 +61,18 @@ def create_app():
         can_create = False
         column_filters = ['status', 'isAdminApproved']
 
-    def is_accessible(self):
-        return current_user.is_authenticated and current_user.is_admin()
 
     class ApprovalAdminView(ModelView):
-       def on_model_change(self, form, model, is_created):
-        if is_created:
-            model.status = 'Approved'
-            model.isAdminApproved = True
+        def on_model_change(self, form, model, is_created):
+            if is_created:
+                model.status = 'Approved'
+                model.isAdminApproved = True
 
-    def is_accessible(self):
-        return current_user.is_authenticated and current_user.is_admin()
 
     class RejectionAdminView(ModelView):
-       def on_model_change(self, form, model, is_created):
-        if is_created:
-            model.status = 'Rejected'
-
-    def is_accessible(self):
-        return current_user.is_authenticated and current_user.is_admin()
+        def on_model_change(self, form, model, is_created):
+            if is_created:
+                model.status = 'Rejected'
 
 
     # Flask-Admin views for the models
@@ -100,14 +87,11 @@ def create_app():
     admin.add_view(RejectionAdminView(Organization, db.session, name='Reject', endpoint='reject_application', category="Applications"))
     admin.add_view(ModelView(Inventory, db.session, menu_icon_type="fa", menu_icon_value="fa-solid fa-tree"))
     admin.add_view(ModelView(Reminder, db.session))
-    admin.add_view(ModelView(Payment, db.session,menu_icon_type="fa", menu_icon_value="fa-solid fa-circle-dollar-to-slot"))
+    admin.add_view(ModelView(Payment, db.session, menu_icon_type="fa", menu_icon_value="fa-solid fa-circle-dollar-to-slot"))
 
     return app
 
 app = create_app()
-
-
-# Adding a WTForms class for user signup
 class SignupForm(FlaskForm):
     user_name = StringField('user_name', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
@@ -131,7 +115,7 @@ def signup():
     user_name = data.get('user_name')
     email = data.get('email')
     password = data.get('password')
-    role_name = data.get('role') 
+    role_name = data.get('role')
 
     if not user_name:
         return jsonify({'message': 'User name is required'}), 400
@@ -158,7 +142,6 @@ def signup():
     db.session.commit()
 
     return jsonify({'message': 'User created successfully'})
-
 
 
 @app.route('/login', methods=['POST'])
