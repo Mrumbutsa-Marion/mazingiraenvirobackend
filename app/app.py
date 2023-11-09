@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify,Blueprint
+from flask import Flask, request, jsonify,Blueprint, abort
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_migrate import Migrate
 from models import db, User, Role, Story, Donation, Beneficiary, Organization, Inventory, Reminder
@@ -14,10 +14,6 @@ from flask import redirect, url_for
 from flask_admin.contrib.sqla import ModelView
 from flask_swagger_ui import get_swaggerui_blueprint
 from datetime import datetime
-import paypalrestsdk
-from paypalrestsdk import Payment
-
-
 
 def create_app():
 
@@ -26,7 +22,6 @@ def create_app():
 
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///environment.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
-    #swagger configs
     SWAGGER_URL = '/swagger'
     API_URL = '/static/swagger.json'
     SWAGGERUI_BLUEPRINT = get_swaggerui_blueprint(
@@ -537,174 +532,174 @@ def get_stories():
     return jsonify(serialized_stories)
 
 # Configure PayPal SDK
-paypalrestsdk.configure({
-    "mode": "sandbox",
-    "client_id": "AXr0WUl_Ss7nwdTPK5VWRa3lju-Yq1AN7KYQjnjefMrLugfR123C6dqDHUXZcoZnJskjb772FQWF8knc",
-    "client_secret": "EFfQwjU9_3CJn75_dbaMVZPalhVlgPqoqpRESMO5I7bQW3rsp8byQx6Vq4K4EDGjIH_TMAQ67zYnm_hw"
-})
-@app.route('/callback', methods=['POST'])
-def create_payment():
+# paypalrestsdk.configure({
+#     "mode": "sandbox",
+#     "client_id": "AXr0WUl_Ss7nwdTPK5VWRa3lju-Yq1AN7KYQjnjefMrLugfR123C6dqDHUXZcoZnJskjb772FQWF8knc",
+#     "client_secret": "EFfQwjU9_3CJn75_dbaMVZPalhVlgPqoqpRESMO5I7bQW3rsp8byQx6Vq4K4EDGjIH_TMAQ67zYnm_hw"
+# })
+# @app.route('/callback', methods=['POST'])
+# def create_payment():
        
-    payment_data = request.get_json()
-    # Create a new payment instance using the PayPal SDK
-    payment = Payment({
-        "intent": "sale",
-        "payer": {
-            "payment_method": "paypal"
-        },
-        "transactions": [{
-            "amount": {
-                "total": str(payment_data['amount']),
-                "currency": "USD" 
-            }
-        }],
-        "redirect_urls": {
-            "return_url": "http://example.com/return",
-            "cancel_url": "http://example.com/cancel"
-        }
-    })
+#     payment_data = request.get_json()
+#     # Create a new payment instance using the PayPal SDK
+#     payment = Payment({
+#         "intent": "sale",
+#         "payer": {
+#             "payment_method": "paypal"
+#         },
+#         "transactions": [{
+#             "amount": {
+#                 "total": str(payment_data['amount']),
+#                 "currency": "USD" 
+#             }
+#         }],
+#         "redirect_urls": {
+#             "return_url": "http://example.com/return",
+#             "cancel_url": "http://example.com/cancel"
+#         }
+#     })
 
-    # Create the payment using the PayPal SDK
-    if payment.create():
-        # Save the payment details to the database
-        payment_model = Payment()
-        payment_model.donor_user_id = payment_data['donor_user_id']
-        payment_model.organization_id = payment_data['organization_id']
-        payment_model.amount = payment_data['amount']
-        payment_model.payment_method = "PayPal"
-        payment_model.date = datetime.utcnow()
-        payment_model.transaction_id = payment['id']
-        payment_model.status = payment['state']
-        payment_model.is_anonymous = payment_data['is_anonymous']
+#     # Create the payment using the PayPal SDK
+#     if payment.create():
+#         # Save the payment details to the database
+#         payment_model = Payment()
+#         payment_model.donor_user_id = payment_data['donor_user_id']
+#         payment_model.organization_id = payment_data['organization_id']
+#         payment_model.amount = payment_data['amount']
+#         payment_model.payment_method = "PayPal"
+#         payment_model.date = datetime.utcnow()
+#         payment_model.transaction_id = payment['id']
+#         payment_model.status = payment['state']
+#         payment_model.is_anonymous = payment_data['is_anonymous']
 
-        db.session.add(payment_model)
-        db.session.commit()
+#         db.session.add(payment_model)
+#         db.session.commit()
 
-        return "Payment created successfully"
-    else:
-        return "Payment creation failed"
-
-
+#         return "Payment created successfully"
+#     else:
+#         return "Payment creation failed"
 
 
 
-@app.route('/payment-details', methods=['GET'])
-def get_payment_details():
-    # Retrieve payment details from the database 
-    payment_details = [
-    {
-        "donor_user_id": 1,
-        "organization_id": 1,
-        "amount": 100.00,
-        "payment_method": "Credit Card",
-        "date": datetime.utcnow(),
-        "transaction_id": "ABC123",
-        "status": "success",
-        "is_anonymous": False
-    },
-    {
-        "donor_user_id": 2,
-        "organization_id": 2,
-        "amount": 50.00,
-        "payment_method": "PayPal",
-        "date": datetime.utcnow(),
-        "transaction_id": "456",
-        "status": "pending",
-        "is_anonymous": True
-    },
-    {
-        "donor_user_id": 3,
-        "organization_id": 3,
-        "amount": 200.00,
-        "payment_method": "Bank Transfer",
-        "date": datetime.utcnow(),
-        "transaction_id": "GHI79",
-        "status": "failed",
-        "is_anonymous": False
-    },
-    {
-        "donor_user_id": 4,
-        "organization_id": 4,
-        "amount": 75.00,
-        "payment_method": "Credit Card",
-        "date": datetime.utcnow(),
-        "transaction_id": "JK012",
-        "status": "success",
-        "is_anonymous": False
-    },
-    {
-        "donor_user_id": 5,
-        "organization_id": 5,
-        "amount": 150.00,
-        "payment_method": "PayPal",
-        "date": datetime.utcnow(),
-        "transaction_id": "MN345",
-        "status": "success",
-        "is_anonymous": True
-    },
-    {
-        "donor_user_id": 6,
-        "organization_id": 1,
-        "amount": 75.00,
-        "payment_method": "Credit Card",
-        "date": datetime.utcnow(),
-        "transaction_id": "PQR68",
-        "status": "success",
-        "is_anonymous": False
-    },
-    {
-        "donor_user_id": 7,
-        "organization_id": 2,
-        "amount": 100.00,
-        "payment_method": "PayPal",
-        "date": datetime.utcnow(),
-        "transaction_id": "STU01",
-        "status": "success",
-        "is_anonymous": True
-    },
-    {
-        "donor_user_id": 8,
-        "organization_id": 5,
-        "amount": 50.00,
-        "payment_method": "Bank Transfer",
-        "date": datetime.utcnow(),
-        "transaction_id": "VWX34",
-        "status": "pending",
-        "is_anonymous": False
-    },
-    {
-        "donor_user_id": 9,
-        "organization_id": 6,
-        "amount": 200.00,
-        "payment_method": "Credit Card",
-        "date": datetime.utcnow(),
-        "transaction_id": "YZ567",
-        "status": "failed",
-        "is_anonymous": False
-    },
-    {
-        "donor_user_id": 10,
-        "organization_id": 7,
-        "amount": 150.00,
-        "payment_method": "PayPal",
-        "date": datetime.utcnow(),
-        "transaction_id": "BC890",
-        "status": "success",
-        "is_anonymous": True
-    },
-    {
-        "donor_user_id": 11,
-        "organization_id": 8,
-        "amount": 80.00,
-        "payment_method": "Credit Card",
-        "date": datetime.utcnow(),
-        "transaction_id": "EFG",
-        "status": "success",
-        "is_anonymous": False
-    }
 
-]
-    return jsonify(payment_details)
+
+# @app.route('/payment-details', methods=['GET'])
+# def get_payment_details():
+#     # Retrieve payment details from the database 
+#     payment_details = [
+#     {
+#         "donor_user_id": 1,
+#         "organization_id": 1,
+#         "amount": 100.00,
+#         "payment_method": "Credit Card",
+#         "date": datetime.utcnow(),
+#         "transaction_id": "ABC123",
+#         "status": "success",
+#         "is_anonymous": False
+#     },
+#     {
+#         "donor_user_id": 2,
+#         "organization_id": 2,
+#         "amount": 50.00,
+#         "payment_method": "PayPal",
+#         "date": datetime.utcnow(),
+#         "transaction_id": "456",
+#         "status": "pending",
+#         "is_anonymous": True
+#     },
+#     {
+#         "donor_user_id": 3,
+#         "organization_id": 3,
+#         "amount": 200.00,
+#         "payment_method": "Bank Transfer",
+#         "date": datetime.utcnow(),
+#         "transaction_id": "GHI79",
+#         "status": "failed",
+#         "is_anonymous": False
+#     },
+#     {
+#         "donor_user_id": 4,
+#         "organization_id": 4,
+#         "amount": 75.00,
+#         "payment_method": "Credit Card",
+#         "date": datetime.utcnow(),
+#         "transaction_id": "JK012",
+#         "status": "success",
+#         "is_anonymous": False
+#     },
+#     {
+#         "donor_user_id": 5,
+#         "organization_id": 5,
+#         "amount": 150.00,
+#         "payment_method": "PayPal",
+#         "date": datetime.utcnow(),
+#         "transaction_id": "MN345",
+#         "status": "success",
+#         "is_anonymous": True
+#     },
+#     {
+#         "donor_user_id": 6,
+#         "organization_id": 1,
+#         "amount": 75.00,
+#         "payment_method": "Credit Card",
+#         "date": datetime.utcnow(),
+#         "transaction_id": "PQR68",
+#         "status": "success",
+#         "is_anonymous": False
+#     },
+#     {
+#         "donor_user_id": 7,
+#         "organization_id": 2,
+#         "amount": 100.00,
+#         "payment_method": "PayPal",
+#         "date": datetime.utcnow(),
+#         "transaction_id": "STU01",
+#         "status": "success",
+#         "is_anonymous": True
+#     },
+#     {
+#         "donor_user_id": 8,
+#         "organization_id": 5,
+#         "amount": 50.00,
+#         "payment_method": "Bank Transfer",
+#         "date": datetime.utcnow(),
+#         "transaction_id": "VWX34",
+#         "status": "pending",
+#         "is_anonymous": False
+#     },
+#     {
+#         "donor_user_id": 9,
+#         "organization_id": 6,
+#         "amount": 200.00,
+#         "payment_method": "Credit Card",
+#         "date": datetime.utcnow(),
+#         "transaction_id": "YZ567",
+#         "status": "failed",
+#         "is_anonymous": False
+#     },
+#     {
+#         "donor_user_id": 10,
+#         "organization_id": 7,
+#         "amount": 150.00,
+#         "payment_method": "PayPal",
+#         "date": datetime.utcnow(),
+#         "transaction_id": "BC890",
+#         "status": "success",
+#         "is_anonymous": True
+#     },
+#     {
+#         "donor_user_id": 11,
+#         "organization_id": 8,
+#         "amount": 80.00,
+#         "payment_method": "Credit Card",
+#         "date": datetime.utcnow(),
+#         "transaction_id": "EFG",
+#         "status": "success",
+#         "is_anonymous": False
+#     }
+
+# ]
+    # return jsonify(payment_details)
 
 
 
