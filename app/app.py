@@ -1,22 +1,27 @@
-from flask import Flask, request, jsonify, abort
+from flask import Flask, request, jsonify,Blueprint, abort
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_migrate import Migrate
-from models import db, User, Role, Story, Donation, Beneficiary, Organization, Inventory, Reminder
+from .models import db, User, Role, Story, Donation, Beneficiary, Organization, Inventory, Reminder,Payment
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, Email
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import secrets
+from flask_login import current_user
+from flask_admin import AdminIndexView, Admin, expose
+from flask import redirect, url_for
+from flask_admin.contrib.sqla import ModelView
 from flask_swagger_ui import get_swaggerui_blueprint
 from datetime import datetime
+
 def create_app():
 
     app = Flask(__name__)
+    
 
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mazingira.db'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///environment.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
-    #swagger configs
     SWAGGER_URL = '/swagger'
     API_URL = '/static/swagger.json'
     SWAGGERUI_BLUEPRINT = get_swaggerui_blueprint(
@@ -28,8 +33,8 @@ def create_app():
     )
     app.register_blueprint(SWAGGERUI_BLUEPRINT, url_prefix=SWAGGER_URL)
 
-
     db.init_app(app)
+
     migrate = Migrate(app, db)
 
     CORS(app)
@@ -37,18 +42,79 @@ def create_app():
     secret_key = secrets.token_hex(16)
     app.config['SECRET_KEY'] = secret_key
 
+    class MyAdminIndexView(AdminIndexView):
+        @expose("/")
+        def index(self):
+         return super(MyAdminIndexView,self).index()
+        
+        
+
+    admin = Admin(app, name='Mazingira', template_mode='bootstrap4', index_view=MyAdminIndexView(
+    name="Dashboard", menu_icon_type="fa", menu_icon_value="fa-dashboard"
+    ))
+
+    class OrganizationAdminView(ModelView):
+        column_list = ('name', 'description', 'contact_information', 'status', 'isAdminApproved')
+        form_columns = ('name', 'description', 'contact_information', 'status', 'isAdminApproved')
+        column_searchable_list = ('name', 'description')
+
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.is_admin()
+
+    class ReviewAdminView(ModelView):
+        column_list = ('id', 'name', 'description', 'contact_information', 'image_url', 'status')
+        can_edit = False
+        can_create = False
+        column_filters = ['status', 'isAdminApproved']
+
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.is_admin()
+
+    class ApprovalAdminView(ModelView):
+       def on_model_change(self, form, model, is_created):
+        if is_created:
+            model.status = 'Approved'
+            model.isAdminApproved = True
+
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.is_admin()
+
+    class RejectionAdminView(ModelView):
+       def on_model_change(self, form, model, is_created):
+        if is_created:
+            model.status = 'Rejected'
+
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.is_admin()
+
+
+    # Flask-Admin views for the models
+    admin.add_view(ModelView(User, db.session, name="Users", menu_icon_type="fa", menu_icon_value="fa-solid fa-users"))
+    admin.add_view(ModelView(Role, db.session, menu_icon_type="fa", menu_icon_value="fa-solid fa-user-tie"))
+    admin.add_view(ModelView(Story, db.session))
+    admin.add_view(ModelView(Donation, db.session, menu_icon_type="fa", menu_icon_value="fa-solid fa-circle-dollar-to-slot"))
+    admin.add_view(ModelView(Beneficiary, db.session, menu_icon_type="fa", menu_icon_value="fa-solid fa-hands-holding-child"))
+    admin.add_view(ModelView(Organization, db.session, menu_icon_type="fa", menu_icon_value="fa-solid fa-database"))
+    admin.add_view(ReviewAdminView(Organization, db.session, name='Applications', endpoint='review_applications', category="Applications"))
+    admin.add_view(ApprovalAdminView(Organization, db.session, name='Approve', endpoint='approve_application', category="Applications"))
+    admin.add_view(RejectionAdminView(Organization, db.session, name='Reject', endpoint='reject_application', category="Applications"))
+    admin.add_view(ModelView(Inventory, db.session, menu_icon_type="fa", menu_icon_value="fa-solid fa-tree"))
+    admin.add_view(ModelView(Reminder, db.session))
+    admin.add_view(ModelView(Payment, db.session,menu_icon_type="fa", menu_icon_value="fa-solid fa-circle-dollar-to-slot"))
+
     return app
 
 app = create_app()
 
-# Define a WTForms class for user signup
+
+# Adding a WTForms class for user signup
 class SignupForm(FlaskForm):
     user_name = StringField('user_name', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
     submit = SubmitField('Sign Up')
 
-# Define a WTForms class for user login
+# Adding a WTForms class for user login
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
@@ -65,6 +131,10 @@ def signup():
     user_name = data.get('user_name')
     email = data.get('email')
     password = data.get('password')
+    role_name = data.get('role') 
+
+    if not user_name:
+        return jsonify({'message': 'User name is required'}), 400
 
     existing_user = User.query.filter_by(email=email).first()
     if existing_user:
@@ -72,12 +142,24 @@ def signup():
 
     hashed_password = generate_password_hash(password)
 
-    new_user = User(user_name=user_name, email=email, password=hashed_password)
+    # use this to check if role exists in the database
+    role = Role.query.filter_by(name=role_name).first()
+
+    if not role:
+        role = Role(name=role_name)
+        db.session.add(role)
+        db.session.commit()
+
+        return jsonify({'message': 'Role not found'}), 404
+
+    new_user = User(user_name=user_name, email=email, password=hashed_password, role_id=role.id)
 
     db.session.add(new_user)
     db.session.commit()
 
     return jsonify({'message': 'User created successfully'})
+
+
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -93,7 +175,7 @@ def login():
 
     return jsonify({'message': 'Login successful'})
 
-# Organizations
+#-------------------routes for Organization -------------------
 @app.route('/organizations', methods=['GET'])
 def get_organizations():
     organizations = Organization.query.all()
@@ -147,7 +229,7 @@ def delete_organization(org_id):
         return jsonify({'error': 'Unable to delete organization', 'details': str(e)}), 500
 
 
-#-------------------routes for organisattion application-------------------
+#-------------------routes for Organization application-------------------
 @app.route('/apply', methods=['POST'])
 def apply():
      data = request.json
@@ -194,11 +276,8 @@ def reject_application(org_id):
     return jsonify({"message": "Organization rejected successfully!"}), 200
    
 
-#----------------------------------------------------------------------------------------
-
-        #donations
-
-@app.route('/donations', methods=['GET']) #admin and organization
+#-------------------routes for Donations-------------------
+@app.route('/donations', methods=['GET']) 
 def get_donations():
     organization_id = request.args.get('organization_id')
     if organization_id:
@@ -234,7 +313,7 @@ def get_donation(donation_id):
     return jsonify(donation_dict), 200
 
 
-@app.route('/donations/<int:donation_id>', methods=['PUT']) #admin only
+@app.route('/donations/<int:donation_id>', methods=['PUT'])
 def update_donation(donation_id):
     if not request.is_json:
         return jsonify({"msg": "Missing JSON in request"}), 400
@@ -262,15 +341,15 @@ def update_donation(donation_id):
         db.session.rollback()
         return jsonify(error=str(e)), 500
 
-@app.route('/donations/<int:donation_id>', methods=['DELETE']) #admin only
+@app.route('/donations/<int:donation_id>', methods=['DELETE']) 
 def delete_donation(donation_id):
     donation = Donation.query.get_or_404(donation_id, description="Donation not found")
     db.session.delete(donation)
     db.session.commit()
     return jsonify({'message': 'Donation deleted successfully'}), 200
 
-    #beneficiaries
-@app.route('/beneficiaries', methods=['GET']) #admin and organization
+#-------------------routes for Beneficiaries-------------------
+@app.route('/beneficiaries', methods=['GET']) 
 def get_beneficiaries():
     beneficiaries = Beneficiary.query.all()
     beneficiaries_list = [{
@@ -283,7 +362,7 @@ def get_beneficiaries():
 
     return jsonify(beneficiaries_list), 200
 
-@app.route('/beneficiaries/<int:beneficiary_id>', methods=['GET']) #admin and organization
+@app.route('/beneficiaries/<int:beneficiary_id>', methods=['GET']) 
 def get_beneficiary(beneficiary_id):
     beneficiary = Beneficiary.query.get_or_404(beneficiary_id)
     beneficiary_data = {
@@ -296,7 +375,7 @@ def get_beneficiary(beneficiary_id):
 
     return jsonify(beneficiary_data), 200    
 
-@app.route('/beneficiaries', methods=['POST']) #organisation only
+@app.route('/beneficiaries', methods=['POST'])
 def create_beneficiary():
     data = request.json
     organization_id = data.get('organization_id')
@@ -323,7 +402,7 @@ def create_beneficiary():
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
-@app.route('/beneficiaries/<int:beneficiary_id>', methods=['PUT']) #organisation only
+@app.route('/beneficiaries/<int:beneficiary_id>', methods=['PUT'])
 def update_beneficiary(beneficiary_id):
     data = request.json
     beneficiary = Beneficiary.query.get(beneficiary_id)
@@ -360,7 +439,7 @@ def update_beneficiary(beneficiary_id):
 
     
 
-@app.route('/beneficiaries/<int:beneficiary_id>', methods=['DELETE']) #organisation only
+@app.route('/beneficiaries/<int:beneficiary_id>', methods=['DELETE']) 
 def delete_beneficiary(beneficiary_id):
     beneficiary = Beneficiary.query.get_or_404(beneficiary_id)
     db.session.delete(beneficiary)
@@ -368,7 +447,9 @@ def delete_beneficiary(beneficiary_id):
 
     return jsonify({'message': 'Beneficiary deleted successfully'}), 200    
  
- #inventory routes
+
+ #-------------------routes for inventory routes-------------------
+
 @app.route('/inventory', methods=['GET'])
 def get_inventory():
     inventory_items = Inventory.query.all()
@@ -430,5 +511,22 @@ def delete_inventory(inventory_id):
     db.session.commit()
     return jsonify({'message': 'Inventory deleted'}), 200
 
+@app.route('/stories', methods=['GET'])
+def get_stories():
+    stories = Story.query.all()
+    serialized_stories = []
+    for story in stories:
+        serialized_story = {
+            'organization_id': story.organization_id,
+            'title': story.title,
+            'content': story.content,
+            'images': story.images,
+            'date_created': story.date_created.isoformat()
+        }
+        serialized_stories.append(serialized_story)
+    return jsonify(serialized_stories)
+
+
+
 if __name__ == '__main__':
-    app.run(port=5003, debug=True)
+    app.run(port=5001, debug=True)

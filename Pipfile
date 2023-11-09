@@ -24,7 +24,7 @@ dnspython = "==2.2.1"
 flask-wtf = "==1.1.1"
 flask-swagger-ui = "*"
 flask-cors = "*"
-
+paypalrestsdk="*"
 [dev-packages]
 
 [requires]
