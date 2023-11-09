@@ -10,21 +10,24 @@ db = SQLAlchemy()
 class User(db.Model):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
+    user_name = db.Column(db.String(80), unique=True, nullable=False)  # Add the 'user_name' column
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(128), nullable=False)
+    role_id = db.Column(db.Integer, db.ForeignKey('role.id'), nullable=True)
+
 
     # Relationships
-    roles = db.relationship('Role', secondary='user_roles', backref=db.backref('users', lazy='dynamic'))
+    role = db.relationship('Role', secondary='user_roles', backref=db.backref('users', lazy='dynamic'))
     reminders = db.relationship('Reminder', backref='user', lazy='dynamic')
 
     def repr(self):
-        return f"<User(username='{self.username}')>"
+        return f"<User(user_name='{self.user_name}')>"
 
 class Role(db.Model):
     __tablename__ = 'role'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(80), unique=True, nullable=False)
+
 
     def repr(self):
         return f"<Role(name='{self.name}')>"
@@ -114,8 +117,6 @@ class Reminder(db.Model):
 
     def repr(self):
         return f"<Reminder(user_id={self.user_id}, organization_id={self.organization_id})>"
-    
-
 
 class Payment(db.Model):
     __tablename__ = 'payment'
