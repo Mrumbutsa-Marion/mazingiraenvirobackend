@@ -2,7 +2,7 @@ from datetime import datetime
 from random import choice,random
 from datetime import timedelta
 from app import create_app
-from models import db, Organization ,User,Inventory,Beneficiary,Donation,Payment,Story,Reminder
+from models import db, Payment,Story
 
 
       # Create the Flask app
