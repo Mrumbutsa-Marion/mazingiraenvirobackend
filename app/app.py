@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, Blueprint, abort
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_migrate import Migrate
-from .models import db, User, Role, Story, Donation, Beneficiary, Organization, Inventory, Reminder, Payment
+from models import db, User, Role, Story, Donation, Beneficiary, Organization, Inventory, Reminder, Payment
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, Email
