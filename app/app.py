@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify,Blueprint, abort
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_migrate import Migrate
-from models import db, User, Role, Story, Donation, Beneficiary, Organization, Inventory, Reminder,Payment
+from .models import db, User, Role, Story, Donation, Beneficiary, Organization, Inventory, Reminder,Payment
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, Email
@@ -88,7 +88,7 @@ def create_app():
         return current_user.is_authenticated and current_user.is_admin()
 
 
-    # Add Flask-Admin views for the models
+    # Flask-Admin views for the models
     admin.add_view(ModelView(User, db.session, name="Users", menu_icon_type="fa", menu_icon_value="fa-solid fa-users"))
     admin.add_view(ModelView(Role, db.session, menu_icon_type="fa", menu_icon_value="fa-solid fa-user-tie"))
     admin.add_view(ModelView(Story, db.session))
@@ -102,25 +102,19 @@ def create_app():
     admin.add_view(ModelView(Reminder, db.session))
     admin.add_view(ModelView(Payment, db.session,menu_icon_type="fa", menu_icon_value="fa-solid fa-circle-dollar-to-slot"))
 
-  
-
-
-   
-
-
     return app
 
 app = create_app()
 
 
-# Define a WTForms class for user signup
+# Adding a WTForms class for user signup
 class SignupForm(FlaskForm):
     user_name = StringField('user_name', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
     submit = SubmitField('Sign Up')
 
-# Define a WTForms class for user login
+# Adding a WTForms class for user login
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
@@ -137,7 +131,7 @@ def signup():
     user_name = data.get('user_name')
     email = data.get('email')
     password = data.get('password')
-    role_name = data.get('role')  # Extract the role from the request data
+    role_name = data.get('role') 
 
     if not user_name:
         return jsonify({'message': 'User name is required'}), 400
@@ -148,7 +142,7 @@ def signup():
 
     hashed_password = generate_password_hash(password)
 
-    # Check if the provided role exists in the database
+    # use this to check if role exists in the database
     role = Role.query.filter_by(name=role_name).first()
 
     if not role:
@@ -181,7 +175,7 @@ def login():
 
     return jsonify({'message': 'Login successful'})
 
-# Organizations
+#-------------------routes for Organization -------------------
 @app.route('/organizations', methods=['GET'])
 def get_organizations():
     organizations = Organization.query.all()
@@ -235,7 +229,7 @@ def delete_organization(org_id):
         return jsonify({'error': 'Unable to delete organization', 'details': str(e)}), 500
 
 
-#-------------------routes for organisattion application-------------------
+#-------------------routes for Organization application-------------------
 @app.route('/apply', methods=['POST'])
 def apply():
      data = request.json
@@ -282,11 +276,8 @@ def reject_application(org_id):
     return jsonify({"message": "Organization rejected successfully!"}), 200
    
 
-#----------------------------------------------------------------------------------------
-
-        #donations
-
-@app.route('/donations', methods=['GET']) #admin and organization
+#-------------------routes for Donations-------------------
+@app.route('/donations', methods=['GET']) 
 def get_donations():
     organization_id = request.args.get('organization_id')
     if organization_id:
@@ -322,7 +313,7 @@ def get_donation(donation_id):
     return jsonify(donation_dict), 200
 
 
-@app.route('/donations/<int:donation_id>', methods=['PUT']) #admin only
+@app.route('/donations/<int:donation_id>', methods=['PUT'])
 def update_donation(donation_id):
     if not request.is_json:
         return jsonify({"msg": "Missing JSON in request"}), 400
@@ -350,15 +341,15 @@ def update_donation(donation_id):
         db.session.rollback()
         return jsonify(error=str(e)), 500
 
-@app.route('/donations/<int:donation_id>', methods=['DELETE']) #admin only
+@app.route('/donations/<int:donation_id>', methods=['DELETE']) 
 def delete_donation(donation_id):
     donation = Donation.query.get_or_404(donation_id, description="Donation not found")
     db.session.delete(donation)
     db.session.commit()
     return jsonify({'message': 'Donation deleted successfully'}), 200
 
-    #beneficiaries
-@app.route('/beneficiaries', methods=['GET']) #admin and organization
+#-------------------routes for Beneficiaries-------------------
+@app.route('/beneficiaries', methods=['GET']) 
 def get_beneficiaries():
     beneficiaries = Beneficiary.query.all()
     beneficiaries_list = [{
@@ -371,7 +362,7 @@ def get_beneficiaries():
 
     return jsonify(beneficiaries_list), 200
 
-@app.route('/beneficiaries/<int:beneficiary_id>', methods=['GET']) #admin and organization
+@app.route('/beneficiaries/<int:beneficiary_id>', methods=['GET']) 
 def get_beneficiary(beneficiary_id):
     beneficiary = Beneficiary.query.get_or_404(beneficiary_id)
     beneficiary_data = {
@@ -384,7 +375,7 @@ def get_beneficiary(beneficiary_id):
 
     return jsonify(beneficiary_data), 200    
 
-@app.route('/beneficiaries', methods=['POST']) #organisation only
+@app.route('/beneficiaries', methods=['POST'])
 def create_beneficiary():
     data = request.json
     organization_id = data.get('organization_id')
@@ -411,7 +402,7 @@ def create_beneficiary():
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
-@app.route('/beneficiaries/<int:beneficiary_id>', methods=['PUT']) #organisation only
+@app.route('/beneficiaries/<int:beneficiary_id>', methods=['PUT'])
 def update_beneficiary(beneficiary_id):
     data = request.json
     beneficiary = Beneficiary.query.get(beneficiary_id)
@@ -448,7 +439,7 @@ def update_beneficiary(beneficiary_id):
 
     
 
-@app.route('/beneficiaries/<int:beneficiary_id>', methods=['DELETE']) #organisation only
+@app.route('/beneficiaries/<int:beneficiary_id>', methods=['DELETE']) 
 def delete_beneficiary(beneficiary_id):
     beneficiary = Beneficiary.query.get_or_404(beneficiary_id)
     db.session.delete(beneficiary)
@@ -456,7 +447,9 @@ def delete_beneficiary(beneficiary_id):
 
     return jsonify({'message': 'Beneficiary deleted successfully'}), 200    
  
- #inventory routes
+
+ #-------------------routes for inventory routes-------------------
+
 @app.route('/inventory', methods=['GET'])
 def get_inventory():
     inventory_items = Inventory.query.all()
@@ -532,177 +525,6 @@ def get_stories():
         }
         serialized_stories.append(serialized_story)
     return jsonify(serialized_stories)
-
-# Configure PayPal SDK
-# paypalrestsdk.configure({
-#     "mode": "sandbox",
-#     "client_id": "AXr0WUl_Ss7nwdTPK5VWRa3lju-Yq1AN7KYQjnjefMrLugfR123C6dqDHUXZcoZnJskjb772FQWF8knc",
-#     "client_secret": "EFfQwjU9_3CJn75_dbaMVZPalhVlgPqoqpRESMO5I7bQW3rsp8byQx6Vq4K4EDGjIH_TMAQ67zYnm_hw"
-# })
-# @app.route('/callback', methods=['POST'])
-# def create_payment():
-       
-#     payment_data = request.get_json()
-#     # Create a new payment instance using the PayPal SDK
-#     payment = Payment({
-#         "intent": "sale",
-#         "payer": {
-#             "payment_method": "paypal"
-#         },
-#         "transactions": [{
-#             "amount": {
-#                 "total": str(payment_data['amount']),
-#                 "currency": "USD" 
-#             }
-#         }],
-#         "redirect_urls": {
-#             "return_url": "http://example.com/return",
-#             "cancel_url": "http://example.com/cancel"
-#         }
-#     })
-
-#     # Create the payment using the PayPal SDK
-#     if payment.create():
-#         # Save the payment details to the database
-#         payment_model = Payment()
-#         payment_model.donor_user_id = payment_data['donor_user_id']
-#         payment_model.organization_id = payment_data['organization_id']
-#         payment_model.amount = payment_data['amount']
-#         payment_model.payment_method = "PayPal"
-#         payment_model.date = datetime.utcnow()
-#         payment_model.transaction_id = payment['id']
-#         payment_model.status = payment['state']
-#         payment_model.is_anonymous = payment_data['is_anonymous']
-
-#         db.session.add(payment_model)
-#         db.session.commit()
-
-#         return "Payment created successfully"
-#     else:
-#         return "Payment creation failed"
-
-
-
-
-
-# @app.route('/payment-details', methods=['GET'])
-# def get_payment_details():
-#     # Retrieve payment details from the database 
-#     payment_details = [
-#     {
-#         "donor_user_id": 1,
-#         "organization_id": 1,
-#         "amount": 100.00,
-#         "payment_method": "Credit Card",
-#         "date": datetime.utcnow(),
-#         "transaction_id": "ABC123",
-#         "status": "success",
-#         "is_anonymous": False
-#     },
-#     {
-#         "donor_user_id": 2,
-#         "organization_id": 2,
-#         "amount": 50.00,
-#         "payment_method": "PayPal",
-#         "date": datetime.utcnow(),
-#         "transaction_id": "456",
-#         "status": "pending",
-#         "is_anonymous": True
-#     },
-#     {
-#         "donor_user_id": 3,
-#         "organization_id": 3,
-#         "amount": 200.00,
-#         "payment_method": "Bank Transfer",
-#         "date": datetime.utcnow(),
-#         "transaction_id": "GHI79",
-#         "status": "failed",
-#         "is_anonymous": False
-#     },
-#     {
-#         "donor_user_id": 4,
-#         "organization_id": 4,
-#         "amount": 75.00,
-#         "payment_method": "Credit Card",
-#         "date": datetime.utcnow(),
-#         "transaction_id": "JK012",
-#         "status": "success",
-#         "is_anonymous": False
-#     },
-#     {
-#         "donor_user_id": 5,
-#         "organization_id": 5,
-#         "amount": 150.00,
-#         "payment_method": "PayPal",
-#         "date": datetime.utcnow(),
-#         "transaction_id": "MN345",
-#         "status": "success",
-#         "is_anonymous": True
-#     },
-#     {
-#         "donor_user_id": 6,
-#         "organization_id": 1,
-#         "amount": 75.00,
-#         "payment_method": "Credit Card",
-#         "date": datetime.utcnow(),
-#         "transaction_id": "PQR68",
-#         "status": "success",
-#         "is_anonymous": False
-#     },
-#     {
-#         "donor_user_id": 7,
-#         "organization_id": 2,
-#         "amount": 100.00,
-#         "payment_method": "PayPal",
-#         "date": datetime.utcnow(),
-#         "transaction_id": "STU01",
-#         "status": "success",
-#         "is_anonymous": True
-#     },
-#     {
-#         "donor_user_id": 8,
-#         "organization_id": 5,
-#         "amount": 50.00,
-#         "payment_method": "Bank Transfer",
-#         "date": datetime.utcnow(),
-#         "transaction_id": "VWX34",
-#         "status": "pending",
-#         "is_anonymous": False
-#     },
-#     {
-#         "donor_user_id": 9,
-#         "organization_id": 6,
-#         "amount": 200.00,
-#         "payment_method": "Credit Card",
-#         "date": datetime.utcnow(),
-#         "transaction_id": "YZ567",
-#         "status": "failed",
-#         "is_anonymous": False
-#     },
-#     {
-#         "donor_user_id": 10,
-#         "organization_id": 7,
-#         "amount": 150.00,
-#         "payment_method": "PayPal",
-#         "date": datetime.utcnow(),
-#         "transaction_id": "BC890",
-#         "status": "success",
-#         "is_anonymous": True
-#     },
-#     {
-#         "donor_user_id": 11,
-#         "organization_id": 8,
-#         "amount": 80.00,
-#         "payment_method": "Credit Card",
-#         "date": datetime.utcnow(),
-#         "transaction_id": "EFG",
-#         "status": "success",
-#         "is_anonymous": False
-#     }
-
-# ]
-    # return jsonify(payment_details)
-
 
 
 
