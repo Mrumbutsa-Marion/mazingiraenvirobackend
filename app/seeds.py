@@ -2,7 +2,7 @@ from datetime import datetime
 from random import choice,random
 from app import create_app
 from datetime import timedelta
-from models import db, Organization ,User,Inventory,Beneficiary,Donation,Payment,Story,Reminder
+from models import db, Organization ,User,Inventory,Beneficiary,Donation,Payment,Story,Reminder,Role
 from datetime import datetime, timedelta
 import random
 import string
@@ -110,7 +110,18 @@ with app.app_context():
         db.session.add(organization)
 
     db.session.commit()
+    roles_data = [
+        {"name": "User"},
+        {"name": "organization"},
+    ]
 
+    for data in roles_data:
+        role = Role.query.filter_by(name=data['name']).first()
+        if not role:
+            role = Role(name=data['name'])
+            db.session.add(role)
+
+    db.session.commit()
    
  
     users_data = [
@@ -469,7 +480,6 @@ with app.app_context():
 print("📖 Stories seeded successfully!")
 
 # Create the Flask app
-app = create_app()
 with app.app_context():
     print("📖 Seeding payments...")
     payments_data = [
@@ -479,7 +489,7 @@ with app.app_context():
         "amount": 100.00,
         "payment_method": "Credit Card",
         "date": datetime.utcnow(),
-        "transaction_id": "ABC123",
+        "transaction_id": "kABC123",
         "status": "success",
         "is_anonymous": False
     },
@@ -489,7 +499,7 @@ with app.app_context():
         "amount": 50.00,
         "payment_method": "PayPal",
         "date": datetime.utcnow(),
-        "transaction_id": "456",
+        "transaction_id": "oi456",
         "status": "pending",
         "is_anonymous": True
     },
@@ -499,7 +509,7 @@ with app.app_context():
         "amount": 200.00,
         "payment_method": "Bank Transfer",
         "date": datetime.utcnow(),
-        "transaction_id": "GHI79",
+        "transaction_id": "lkGHI79",
         "status": "failed",
         "is_anonymous": False
     },
@@ -509,7 +519,7 @@ with app.app_context():
         "amount": 75.00,
         "payment_method": "Credit Card",
         "date": datetime.utcnow(),
-        "transaction_id": "JK012",
+        "transaction_id": "poJK012",
         "status": "success",
         "is_anonymous": False
     },
@@ -519,7 +529,7 @@ with app.app_context():
         "amount": 150.00,
         "payment_method": "PayPal",
         "date": datetime.utcnow(),
-        "transaction_id": "MN345",
+        "transaction_id": "mkMN345",
         "status": "success",
         "is_anonymous": True
     },
@@ -529,7 +539,7 @@ with app.app_context():
         "amount": 75.00,
         "payment_method": "Credit Card",
         "date": datetime.utcnow(),
-        "transaction_id": "PQR68",
+        "transaction_id": "xzPQR68",
         "status": "success",
         "is_anonymous": False
     },
@@ -539,7 +549,7 @@ with app.app_context():
         "amount": 100.00,
         "payment_method": "PayPal",
         "date": datetime.utcnow(),
-        "transaction_id": "STU01",
+        "transaction_id": "nbSTU01",
         "status": "success",
         "is_anonymous": True
     },
@@ -549,7 +559,7 @@ with app.app_context():
         "amount": 50.00,
         "payment_method": "Bank Transfer",
         "date": datetime.utcnow(),
-        "transaction_id": "VWX34",
+        "transaction_id": "hgVWX34",
         "status": "pending",
         "is_anonymous": False
     },
@@ -559,7 +569,7 @@ with app.app_context():
         "amount": 200.00,
         "payment_method": "Credit Card",
         "date": datetime.utcnow(),
-        "transaction_id": "YZ567",
+        "transaction_id": "bdYZ567",
         "status": "failed",
         "is_anonymous": False
     },
@@ -569,7 +579,7 @@ with app.app_context():
         "amount": 150.00,
         "payment_method": "PayPal",
         "date": datetime.utcnow(),
-        "transaction_id": "BC890",
+        "transaction_id": "ytBC890",
         "status": "success",
         "is_anonymous": True
     },
@@ -579,7 +589,7 @@ with app.app_context():
         "amount": 80.00,
         "payment_method": "Credit Card",
         "date": datetime.utcnow(),
-        "transaction_id": "EFG",
+        "transaction_id": "nbvEFG",
         "status": "success",
         "is_anonymous": False
     }

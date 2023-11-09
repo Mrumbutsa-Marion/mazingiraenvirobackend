@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, abort
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_migrate import Migrate
-from models import db, User, Role, Story, Donation, Beneficiary, Organization, Inventory, Reminder
+from models import db, User, Role, Story, Donation, Beneficiary, Organization, Inventory, Reminder, Payment
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, Email
@@ -14,7 +14,6 @@ from flask import redirect, url_for
 from flask_admin.contrib.sqla import ModelView
 from flask_swagger_ui import get_swaggerui_blueprint
 from datetime import datetime
-from paypal_routes import paypal_bp
 
 
 def create_app():
@@ -102,6 +101,8 @@ def create_app():
     admin.add_view(RejectionAdminView(Organization, db.session, name='Reject', endpoint='reject_application', category="Applications"))
     admin.add_view(ModelView(Inventory, db.session, menu_icon_type="fa", menu_icon_value="fa-solid fa-tree"))
     admin.add_view(ModelView(Reminder, db.session))
+    admin.add_view(ModelView(Payment, db.session))
+
   
 
 
@@ -535,7 +536,6 @@ def get_stories():
 
 
 
-app.register_blueprint(paypal_bp, url_prefix='/paypal')
 
 if __name__ == '__main__':
     app.run(port=5002, debug=True)

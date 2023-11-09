@@ -1,8 +1,8 @@
-"""paymentclass
+"""Initial Commit
 
-Revision ID: 8f3c006f450f
+Revision ID: d41c28ae9d4a
 Revises: 
-Create Date: 2023-11-06 11:57:30.535399
+Create Date: 2023-11-09 22:19:52.288570
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '8f3c006f450f'
+revision = 'd41c28ae9d4a'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -26,12 +26,14 @@ def upgrade():
     )
     op.create_table('user',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('username', sa.String(length=80), nullable=False),
+    sa.Column('user_name', sa.String(length=80), nullable=False),
     sa.Column('email', sa.String(length=120), nullable=False),
     sa.Column('password', sa.String(length=128), nullable=False),
+    sa.Column('role_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['role_id'], ['role.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email'),
-    sa.UniqueConstraint('username')
+    sa.UniqueConstraint('user_name')
     )
     op.create_table('organization',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
