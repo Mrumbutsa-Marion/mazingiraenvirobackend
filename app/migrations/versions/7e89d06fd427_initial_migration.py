@@ -1,8 +1,8 @@
 """Initial Migration
 
-Revision ID: ba731b7220f7
+Revision ID: 7e89d06fd427
 Revises: 
-Create Date: 2023-11-06 19:55:41.130625
+Create Date: 2023-11-09 23:00:01.647324
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'ba731b7220f7'
+revision = '7e89d06fd427'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -77,6 +77,21 @@ def upgrade():
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('transaction_id')
     )
+    op.create_table('payment',
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('donor_user_id', sa.Integer(), nullable=True),
+    sa.Column('organization_id', sa.Integer(), nullable=True),
+    sa.Column('amount', sa.Numeric(precision=10, scale=2), nullable=False),
+    sa.Column('payment_method', sa.String(length=50), nullable=False),
+    sa.Column('date', sa.Date(), nullable=False),
+    sa.Column('transaction_id', sa.String(length=120), nullable=True),
+    sa.Column('status', sa.String(length=20), nullable=False),
+    sa.Column('is_anonymous', sa.Boolean(), nullable=False),
+    sa.ForeignKeyConstraint(['donor_user_id'], ['user.id'], ),
+    sa.ForeignKeyConstraint(['organization_id'], ['organization.id'], ),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('transaction_id')
+    )
     op.create_table('reminder',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=True),
@@ -114,6 +129,7 @@ def downgrade():
     op.drop_table('inventory')
     op.drop_table('story')
     op.drop_table('reminder')
+    op.drop_table('payment')
     op.drop_table('donation')
     op.drop_table('beneficiary')
     op.drop_table('user_roles')

@@ -1,7 +1,7 @@
 from datetime import datetime
 from random import choice,random
 from app import create_app
-from models import db, Organization ,User,Inventory,Beneficiary,Donation,Payment,Story,Reminder
+from models import db, Organization ,User,Inventory,Beneficiary,Donation,Payment,Story,Reminder, Role
 from datetime import datetime, timedelta
 import random
 import uuid
@@ -109,7 +109,18 @@ with app.app_context():
         db.session.add(organization)
 
     db.session.commit()
+    roles_data = [
+        {"name": "User"},
+        {"name": "organization"},
+    ]
 
+    for data in roles_data:
+        role = Role.query.filter_by(name=data['name']).first()
+        if not role:
+            role = Role(name=data['name'])
+            db.session.add(role)
+
+    db.session.commit()
    
  
     users_data = [

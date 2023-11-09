@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify,Blueprint, abort
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_migrate import Migrate
-from models import db, User, Role, Story, Donation, Beneficiary, Organization, Inventory, Reminder
+from models import db, User, Role, Story, Donation, Beneficiary, Organization, Inventory, Reminder,Payment
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, Email
@@ -100,6 +100,8 @@ def create_app():
     admin.add_view(RejectionAdminView(Organization, db.session, name='Reject', endpoint='reject_application', category="Applications"))
     admin.add_view(ModelView(Inventory, db.session, menu_icon_type="fa", menu_icon_value="fa-solid fa-tree"))
     admin.add_view(ModelView(Reminder, db.session))
+    admin.add_view(ModelView(Payment, db.session,menu_icon_type="fa", menu_icon_value="fa-solid fa-circle-dollar-to-slot"))
+
   
 
 
